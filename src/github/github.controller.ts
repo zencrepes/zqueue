@@ -3,8 +3,6 @@ import { Logger, Controller, Post, Body, Req, Headers } from '@nestjs/common';
 import { Request } from 'express';
 import { Queue } from 'bull';
 
-import * as CryptoJS from 'crypto-js';
-
 import { WebhookPayload } from './webhookPayload.type';
 import { ConfigService } from '../config.service';
 
