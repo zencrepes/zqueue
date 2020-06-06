@@ -2,6 +2,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Logger, Controller, Post, Body, Req, Headers } from '@nestjs/common';
 import { Request } from 'express';
 import { Queue } from 'bull';
+import * as crypto from 'crypto';
 
 import { WebhookPayload } from './webhookPayload.type';
 import { ConfigService } from '../config.service';
@@ -12,7 +13,7 @@ const verifySignature = (
   confSecret: string,
   payload: string,
 ) => {
-  const crypto = require('crypto');
+  // const crypto = require('crypto');
   const hmac = crypto.createHmac('sha1', confSecret);
   const digest = Buffer.from(
     'sha1=' + hmac.update(payload).digest('hex'),
