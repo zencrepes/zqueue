@@ -1,9 +1,9 @@
-import { Module, Global } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { EsClientService } from './esClient.service';
 import { ConfigModule } from './config.module';
 
 @Module({
-  imports: [ConfigModule.register(), EsClientModule],
+  imports: [ConfigModule.register()],
   providers: [EsClientService],
   exports: [EsClientService],
 })

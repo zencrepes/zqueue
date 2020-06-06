@@ -3,7 +3,7 @@ import {
   ingestNodes,
   esMapping,
   esSettings,
-} from '@bit/zencrepes.zindexer.github-releases';
+} from '@bit/zencrepes.zindexer.github-watchers';
 
 import {
   getEsIndex,
@@ -12,7 +12,7 @@ import {
   aliasEsIndex,
 } from '@bit/zencrepes.zindexer.es-utils';
 
-const updateRelease = async (
+const updateWatcher = async (
   ghClientService,
   esClient,
   userConfig,
@@ -21,7 +21,7 @@ const updateRelease = async (
   repo,
 ) => {
   const queryParams = { nodesArray: [nodeId] };
-  const nodesData = await ghClientService.fetchNodesById(
+  let nodesData = await ghClientService.fetchNodesById(
     fetchNodesById,
     queryParams,
   );
@@ -41,67 +41,88 @@ const updateRelease = async (
     const sourceId = repoObj.id;
     const sourceName = repoObj.owner.login + '/' + repoObj.name;
 
-    const nodes = ingestNodes(nodesData, 'zqueue', sourceId, repoObj);
+    nodesData = nodesData.map(n => {
+      return {
+        ...n,
+        repository: repoObj,
+        watchedAt: new Date().toISOString(),
+      };
+    });
 
-    const releasesIndex = getEsIndex(
-      userConfig.elasticsearch.dataIndices.githubReleases,
+    const nodes = ingestNodes(
+      nodesData,
+      'zqueue',
+      sourceId,
+      repoObj,
+      'watchers',
+    );
+
+    const watchersIndex = getEsIndex(
+      userConfig.elasticsearch.dataIndices.githubWatchers,
       userConfig.elasticsearch.oneIndexPerSource,
       sourceName,
     );
     await checkEsIndex(
       esClient,
-      releasesIndex,
+      watchersIndex,
       esMapping,
       esSettings,
       console.log,
     );
-    await pushEsNodes(esClient, releasesIndex, nodes, console.log);
-    logger.log('Node: ' + nodeId + ' submitted to Elasticsearch');
+    await pushEsNodes(esClient, watchersIndex, nodes, console.log);
+    logger.log('[' + nodeId + '] watcher submitted to Elasticsearch ');
 
     if (userConfig.elasticsearch.oneIndexPerSource === true) {
       // Create an alias used for group querying
       await aliasEsIndex(
         esClient,
-        userConfig.elasticsearch.dataIndices.githubReleases,
+        userConfig.elasticsearch.dataIndices.githubWatchers,
         console.log,
       );
     }
   }
 };
 
-const processReleasePayload = async (
+const processWatcherPayload = async (
   ghClientService,
   esClient,
   userConfig,
   logger,
   payload,
 ) => {
+  const nodeId =
+    'watchers-' + payload.repository.node_id + payload.sender.node_id;
   if (payload.action === 'deleted') {
-    logger.log('Deleting release: ' + payload.release.node_id);
+    logger.log('Deleting watcher: ' + nodeId);
     try {
       await esClient.delete({
-        id: payload.release.node_id,
-        index: userConfig.elasticsearch.dataIndices.githubReleases,
+        id: nodeId,
+        index: userConfig.elasticsearch.dataIndices.githubWatchers,
       });
     } catch (e) {
-      logger.log('Error deleting node, it was probably already deleted');
-      logger.log('ID: ' + payload.label.node_id);
       logger.log(
-        'Index: ' + userConfig.elasticsearch.dataIndices.githubReleases,
+        '[' + nodeId + '] Error deleting node, it was probably already deleted',
+      );
+      logger.log('[' + nodeId + '] ID: ' + nodeId);
+      logger.log(
+        '[' +
+          nodeId +
+          '] Index: ' +
+          userConfig.elasticsearch.dataIndices.githubWatchers,
       );
       logger.debug(payload);
     }
   } else {
-    logger.log('Fetching data for release: ' + payload.release.node_id);
-    await updateRelease(
+    logger.log('[' + nodeId + '] Fetching data for watcher ');
+    await updateWatcher(
       ghClientService,
       esClient,
       userConfig,
       logger,
-      payload.release.node_id,
+      payload.sender.node_id,
       payload.repository,
     );
   }
 };
 
-export default processReleasePayload;
+export default processWatcherPayload;

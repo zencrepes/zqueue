@@ -3,7 +3,7 @@ import {
   ingestNodes,
   esMapping,
   esSettings,
-} from '@bit/zencrepes.zindexer.github-releases';
+} from '@bit/zencrepes.zindexer.github-stargazers';
 
 import {
   getEsIndex,
@@ -12,16 +12,17 @@ import {
   aliasEsIndex,
 } from '@bit/zencrepes.zindexer.es-utils';
 
-const updateRelease = async (
+const updateStargazer = async (
   ghClientService,
   esClient,
   userConfig,
   logger,
   nodeId,
   repo,
+  starredAt,
 ) => {
   const queryParams = { nodesArray: [nodeId] };
-  const nodesData = await ghClientService.fetchNodesById(
+  let nodesData = await ghClientService.fetchNodesById(
     fetchNodesById,
     queryParams,
   );
@@ -41,67 +42,89 @@ const updateRelease = async (
     const sourceId = repoObj.id;
     const sourceName = repoObj.owner.login + '/' + repoObj.name;
 
-    const nodes = ingestNodes(nodesData, 'zqueue', sourceId, repoObj);
+    nodesData = nodesData.map(n => {
+      return {
+        ...n,
+        repository: repoObj,
+        starredAt,
+      };
+    });
 
-    const releasesIndex = getEsIndex(
-      userConfig.elasticsearch.dataIndices.githubReleases,
+    const nodes = ingestNodes(
+      nodesData,
+      'zqueue',
+      sourceId,
+      repoObj,
+      'stargazers',
+    );
+
+    const stargazersIndex = getEsIndex(
+      userConfig.elasticsearch.dataIndices.githubStargazers,
       userConfig.elasticsearch.oneIndexPerSource,
       sourceName,
     );
     await checkEsIndex(
       esClient,
-      releasesIndex,
+      stargazersIndex,
       esMapping,
       esSettings,
       console.log,
     );
-    await pushEsNodes(esClient, releasesIndex, nodes, console.log);
-    logger.log('Node: ' + nodeId + ' submitted to Elasticsearch');
+    await pushEsNodes(esClient, stargazersIndex, nodes, console.log);
+    logger.log('[' + nodeId + '] stargazer submitted to Elasticsearch ');
 
     if (userConfig.elasticsearch.oneIndexPerSource === true) {
       // Create an alias used for group querying
       await aliasEsIndex(
         esClient,
-        userConfig.elasticsearch.dataIndices.githubReleases,
+        userConfig.elasticsearch.dataIndices.githubStargazers,
         console.log,
       );
     }
   }
 };
 
-const processReleasePayload = async (
+const processStargazerPayload = async (
   ghClientService,
   esClient,
   userConfig,
   logger,
   payload,
 ) => {
+  const nodeId =
+    'stargazers-' + payload.repository.node_id + payload.sender.node_id;
   if (payload.action === 'deleted') {
-    logger.log('Deleting release: ' + payload.release.node_id);
+    logger.log('Deleting stargazer: ' + nodeId);
     try {
       await esClient.delete({
-        id: payload.release.node_id,
-        index: userConfig.elasticsearch.dataIndices.githubReleases,
+        id: nodeId,
+        index: userConfig.elasticsearch.dataIndices.githubStargazers,
       });
     } catch (e) {
-      logger.log('Error deleting node, it was probably already deleted');
-      logger.log('ID: ' + payload.label.node_id);
       logger.log(
-        'Index: ' + userConfig.elasticsearch.dataIndices.githubReleases,
+        '[' + nodeId + '] Error deleting node, it was probably already deleted',
+      );
+      logger.log('[' + nodeId + '] ID: ' + nodeId);
+      logger.log(
+        '[' +
+          nodeId +
+          '] Index: ' +
+          userConfig.elasticsearch.dataIndices.githubStargazers,
       );
       logger.debug(payload);
     }
   } else {
-    logger.log('Fetching data for release: ' + payload.release.node_id);
-    await updateRelease(
+    logger.log('[' + nodeId + '] Fetching data for stargazer ');
+    await updateStargazer(
       ghClientService,
       esClient,
       userConfig,
       logger,
-      payload.release.node_id,
+      payload.sender.node_id,
       payload.repository,
+      payload.starred_at,
     );
   }
 };
 
-export default processReleasePayload;
+export default processStargazerPayload;

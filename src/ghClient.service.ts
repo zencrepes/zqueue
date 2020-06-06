@@ -97,6 +97,8 @@ export class GhClientService {
       this.logger.log('Ready to resume querying');
     }
     let data: any = {}; // eslint-disable-line
+    const t0 = performance.now();
+
     try {
       data = await this.ghClient.query({
         query: query,
@@ -110,7 +112,8 @@ export class GhClientService {
       this.logger.debug('THIS IS AN ERROR');
       this.logger.debug(error);
     }
-
+    const t1 = performance.now();
+    const callDuration = t1 - t0;
     if (
       data.data !== undefined &&
       data.data.errors !== undefined &&
@@ -128,7 +131,9 @@ export class GhClientService {
           data.data.rateLimit.cost +
           ' (token will reset at: ' +
           data.data.rateLimit.resetAt +
-          ')',
+          '), call duration: ' +
+          Math.round(callDuration) +
+          'ms',
       );
       this.setRateLimit(data.data.rateLimit);
     }
@@ -139,14 +144,12 @@ export class GhClientService {
     let data: any = {}; // eslint-disable-line
     if (this.errorRetry <= 3) {
       await this.sleep(1000); // Wait 1s between requests to avoid hitting GitHub API rate limit => https://developer.github.com/v3/guides/best-practices-for-integrators/
-      const t0 = performance.now();
       try {
         data = await this.graphqlQuery(gqlQuery, queryParams);
       } catch (error) {
         this.logger.warn(error);
       }
-      const t1 = performance.now();
-      const callDuration = t1 - t0;
+
       if (data.data !== undefined && data.data !== null) {
         this.errorRetry = 0;
         return data.data.nodes;

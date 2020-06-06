@@ -22,7 +22,6 @@ export class GithubProcessor {
 
   @Process('fetchRemoteNode')
   handlFetchNode(job: Job) {
-    const ghClient = this.ghClientService.getGhClient();
     const esClient = this.esClientService.getEsClient();
     const userConfig = this.configService.getUserConfig();
 

@@ -5,6 +5,8 @@ import processMilestonePayload from './processMilestone';
 import processReleasePayload from './processRelease';
 import processProjectPayload from './processProject';
 import processRepositoryPayload from './processRepository';
+import processStargazerPayload from './processStargazer';
+import processWatcherPayload from './processWatcher';
 
 const fetchNode = (
   ghClientService,
@@ -71,6 +73,24 @@ const fetchNode = (
       break;
     case 'repos':
       processRepositoryPayload(
+        ghClientService,
+        esClient,
+        userConfig,
+        logger,
+        payload,
+      );
+      break;
+    case 'stargazers':
+      processStargazerPayload(
+        ghClientService,
+        esClient,
+        userConfig,
+        logger,
+        payload,
+      );
+      break;
+    case 'watchers':
+      processWatcherPayload(
         ghClientService,
         esClient,
         userConfig,

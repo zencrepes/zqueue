@@ -2,12 +2,9 @@ import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 
-import fetchNode from './fetchNode/index';
-import storePayload from './storePayload/index';
 import storeRawPayload from './storeRawPayload/index';
 
 import { ConfigService } from '../config.service';
-import { GhClientService } from '../ghClient.service';
 import { EsClientService } from '../esClient.service';
 
 @Processor('storerawpayload')
@@ -16,7 +13,6 @@ export class GithubStoreRawPayloadProcessor {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly ghClientService: GhClientService,
     private readonly esClientService: EsClientService,
   ) {}
 

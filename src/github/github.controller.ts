@@ -8,6 +8,26 @@ import * as CryptoJS from 'crypto-js';
 import { WebhookPayload } from './webhookPayload.type';
 import { ConfigService } from '../config.service';
 
+const shouldProcessEvent = (
+  githubEvent: string,
+  includeGithubEvents: string[],
+  excludeGithubEvents: string[],
+) => {
+  if (excludeGithubEvents.includes(githubEvent)) {
+    return false;
+  }
+  if (includeGithubEvents.includes(githubEvent)) {
+    return true;
+  }
+  if (includeGithubEvents.includes('*')) {
+    return true;
+  }
+  if (excludeGithubEvents.includes('*')) {
+    return false;
+  }
+  return true;
+};
+
 @Controller('github')
 export class GithubController {
   private readonly logger = new Logger(GithubController.name);
@@ -59,7 +79,7 @@ export class GithubController {
 
     //https://github.com/compwright/x-hub-signature
 
-    var hashb = CryptoJS.HmacSHA1(
+    const hashb = CryptoJS.HmacSHA1(
       request,
       userConfig.github.webhook.secret,
       // userConfig.github.webhook.secret,
@@ -87,8 +107,11 @@ export class GithubController {
     }
 
     if (
-      userConfig.github.webhook.fetchNode.githubEvents.includes('*') ||
-      userConfig.github.webhook.fetchNode.githubEvents.includes(eventType)
+      shouldProcessEvent(
+        eventType,
+        userConfig.github.webhook.fetchNode.includeGithubEvents,
+        userConfig.github.webhook.fetchNode.excludeGithubEvents,
+      ) === true
     ) {
       if (githubEvent !== undefined) {
         await this.githubQueue.add('fetchRemoteNode', {
@@ -102,26 +125,50 @@ export class GithubController {
             ') not known by fetchNode configuration, cannot fetch its node content',
         );
       }
+    } else {
+      this.logger.log(
+        'Received an event type (' +
+          eventType +
+          ') excluded from processing by fetchNode configuration',
+      );
     }
 
     if (
-      userConfig.github.webhook.nodePayload.githubEvents.includes('*') ||
-      userConfig.github.webhook.nodePayload.githubEvents.includes(eventType)
+      shouldProcessEvent(
+        eventType,
+        userConfig.github.webhook.nodePayload.includeGithubEvents,
+        userConfig.github.webhook.nodePayload.excludeGithubEvents,
+      ) === true
     ) {
       await this.storePayload.add('store', {
         payload: payload,
         eventType: zcEntity,
       });
+    } else {
+      this.logger.log(
+        'Received an event type (' +
+          eventType +
+          ') excluded from processing by nodePayload configuration',
+      );
     }
 
     if (
-      userConfig.github.webhook.timelinePayload.githubEvents.includes('*') ||
-      userConfig.github.webhook.timelinePayload.githubEvents.includes(eventType)
+      shouldProcessEvent(
+        eventType,
+        userConfig.github.webhook.timelinePayload.includeGithubEvents,
+        userConfig.github.webhook.timelinePayload.excludeGithubEvents,
+      ) === true
     ) {
       await this.storeRawpayload.add('store', {
         payload: payload,
         eventType: zcEntity,
       });
+    } else {
+      this.logger.log(
+        'Received an event type (' +
+          eventType +
+          ') excluded from processing by timelinePayload configuration',
+      );
     }
   }
 }
