@@ -1,7 +1,7 @@
 <h1 align="center"> ZenCrepes Zqueue </h1><br>
 
 <p align="center">
-This repository contains ZenCrepes webhook handler, it processed webhook events received from GitHub.
+This repository contains ZenCrepes webhook handler, it processes webhook events received from GitHub.
 </p>
 
 # Documentation
