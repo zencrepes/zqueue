@@ -44,6 +44,7 @@
     "apollo-link": "^1.2.14",
     "apollo-link-http": "^1.5.17",
     "bull": "^3.14.0",
+    "crypto": "^1.0.1",
     "crypto-js": "^4.0.0",
     "graphql": "^15.0.0",
     "load-yaml-file": "^0.2.0",
@@ -51,8 +52,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^6.5.4",
     "untildify": "^4.0.0",
-    "uuid": "^8.1.0",
-    "x-hub-signature": "^1.2.0"
+    "uuid": "^8.1.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.0.0",

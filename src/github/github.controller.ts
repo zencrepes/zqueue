@@ -8,6 +8,29 @@ import * as CryptoJS from 'crypto-js';
 import { WebhookPayload } from './webhookPayload.type';
 import { ConfigService } from '../config.service';
 
+//https://gist.github.com/stigok/57d075c1cf2a609cb758898c0b202428
+const verifySignature = (
+  githubSignature: string,
+  confSecret: string,
+  payload: string,
+) => {
+  const crypto = require('crypto');
+  const hmac = crypto.createHmac('sha1', confSecret);
+  const digest = Buffer.from(
+    'sha1=' + hmac.update(payload).digest('hex'),
+    'utf8',
+  );
+  const checksum = Buffer.from(githubSignature, 'utf8');
+  if (
+    checksum.length !== digest.length ||
+    !crypto.timingSafeEqual(digest, checksum)
+  ) {
+    return false;
+  } else {
+    return true;
+  }
+};
+
 const shouldProcessEvent = (
   githubEvent: string,
   includeGithubEvents: string[],
@@ -56,35 +79,18 @@ export class GithubController {
         ? headers['x-hub-signature']
         : 'noheader';
 
-    console.log(signature);
-    console.log(userConfig.github.webhook.secret);
-    // var hash = hmacSHA512(userConfig.github.webhook.secret, payload);
-
-    // const { signer } = require('x-hub-signature');
-    // const sign = signer({
-    //   algorithm: 'sha1',
-    //   secret: 'abcd',
-    // });
-    // const signaturef = sign(payload);
-    // console.log(signaturef);
-
-    // const webhookMiddleware = require('x-hub-signature').middleware;
-    // const hash = webhookMiddleware({
-    //   algorithm: 'sha1',
-    //   secret: userConfig.github.webhook.secret,
-    //   require: true,
-    //   getRawBody: req => req.body,
-    // });
-    // console.log('sha1=' + hash);
-
-    //https://github.com/compwright/x-hub-signature
-
-    const hashb = CryptoJS.HmacSHA1(
-      request,
-      userConfig.github.webhook.secret,
-      // userConfig.github.webhook.secret,
-    ).toString(CryptoJS.enc.Hex);
-    console.log('sha1=' + hashb);
+    if (
+      verifySignature(
+        signature,
+        userConfig.github.webhook.secret,
+        JSON.stringify(payload),
+      ) !== true
+    ) {
+      this.logger.warn(
+        'Received an incorrect x-hub-signature from GitHub, please check the secrets on both ends',
+      );
+      return;
+    }
 
     const githubEvent = userConfig.github.webhook.events.find(
       e => e.githubEvent === eventType,
