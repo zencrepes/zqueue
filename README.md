@@ -1,4 +1,4 @@
-<h1 align="center"> ZenCrepes Zqueue </h1><br>
+<h1 align="center"> Zqueue </h1><br>
 
 <p align="center">
 This repository contains ZenCrepes webhook handler, it processes webhook events received from GitHub.
@@ -14,7 +14,7 @@ This readme only contains developer-focused details.
 
 Zqueue is a [Nest.js](http://nestjs.com/) app, it receives events from GitHub and places those in three Redis queues:
 
-- **github**: Limited to processing one queue element at a time and per second (to play nicely with rate throttling), this queue initiates a call to GitHub to fetch additional metadata, not included in the webhook payload. The objective here is to reach content parity with nodes fetches using [Zencrepes's Zindexer](http://github.com/zencrepes/zindexer).
+- **github**: Limited to processing one queue element at a time and per second (to play nicely with [GitHub rate limits](https://developer.github.com/v3/#rate-limiting)), this queue initiates a call to GitHub to fetch additional metadata, not included in the webhook payload. The objective here is to reach content parity with nodes fetches using [Zindexer](http://github.com/zencrepes/zindexer).
 - **storepayload**: Pushes the payload to an elasticsearch index (one index per payload type) while trying to keep only one document per github node (overwrite on update). It aims at providing the latest state of a node.
 - **storerawpayload**: Pushes the payload to an elasticsearch index (one index per payload type) and record the date at which the event was received. It aims at providing a timeline view of nodes lifecycle.
 
