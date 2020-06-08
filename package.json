@@ -22,7 +22,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@bit/zencrepes.zindexer.config": "^0.0.12",
+    "@bit/zencrepes.zindexer.config": "^0.0.13",
     "@bit/zencrepes.zindexer.es-utils": "^0.0.10",
     "@bit/zencrepes.zindexer.github-issues": "^0.0.10",
     "@bit/zencrepes.zindexer.github-labels": "^0.0.10",

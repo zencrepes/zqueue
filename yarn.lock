@@ -308,10 +308,10 @@
   resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.6.tgz#ea4df048aa33d58be6f404d140e8018132421958"
   integrity sha1-6k3wSKoz1Yvm9ATRQOgBgTJCGVg=
 
-"@bit/zencrepes.zindexer.config@^0.0.12":
-  version "0.0.12"
-  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.12.tgz#88c33e237f1bd19f04b9b66b03abbf1d9055c635"
-  integrity sha1-iMM+I38b0Z8EubZrA6u/HZBVxjU=
+"@bit/zencrepes.zindexer.config@^0.0.13":
+  version "0.0.13"
+  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.13.tgz#afa88e2fc2f56babf49978691af834b49f849ebc"
+  integrity sha1-r6iOL8L1a6v0mXhpGvg0tJ+Enrw=
 
 "@bit/zencrepes.zindexer.es-utils@^0.0.10":
   version "0.0.10"
