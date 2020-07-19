@@ -22,6 +22,14 @@ Zqueue is a [Nest.js](http://nestjs.com/) app, it receives events from GitHub an
 
 ## Launch the app
 
+Launch Redis:
+
+```bash
+docker run -p 6379:6379 redis
+```
+
+Launch zqueue:
+
 ```bash
 yarn
 yarn run start:dev
