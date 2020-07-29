@@ -24,7 +24,7 @@
   "dependencies": {
     "@bit/zencrepes.zindexer.config": "^0.0.14",
     "@bit/zencrepes.zindexer.es-utils": "^0.0.14",
-    "@bit/zencrepes.zindexer.github-issues": "^0.0.14",
+    "@bit/zencrepes.zindexer.github-issues": "^0.0.15",
     "@bit/zencrepes.zindexer.github-labels": "^0.0.10",
     "@bit/zencrepes.zindexer.github-milestones": "^0.0.10",
     "@bit/zencrepes.zindexer.github-projects": "^0.0.10",

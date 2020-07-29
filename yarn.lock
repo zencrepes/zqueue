@@ -312,10 +312,10 @@
     "@types/js-yaml" "^3.12.1"
     js-yaml "^3.13.1"
 
-"@bit/zencrepes.zindexer.github-issues@^0.0.14":
-  version "0.0.14"
-  resolved "https://node.bit.dev/zencrepes.zindexer.github-issues/-/zencrepes.zindexer.github-issues-0.0.14.tgz#adef48f5e181cb52e54264c056f42230f3ce2d24"
-  integrity sha1-re9I9eGBy1LlQmTAVvQiMPPOLSQ=
+"@bit/zencrepes.zindexer.github-issues@^0.0.15":
+  version "0.0.15"
+  resolved "https://node.bit.dev/zencrepes.zindexer.github-issues/-/zencrepes.zindexer.github-issues-0.0.15.tgz#36df66c320a628df277637517370e4fabfa1ad27"
+  integrity sha1-Nt9mwyCmKN8ndjdRc3Dk+r+hrSc=
   dependencies:
     "@bit/zencrepes.zindexer.config" "0.0.14"
     "@types/xregexp" "^4.3.0"

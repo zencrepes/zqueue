@@ -27,6 +27,7 @@ const updateIssue = async (
 
   if (nodesData.length > 0) {
     const currentNode = nodesData[0];
+    console.log(nodesData);
     const sourceId = currentNode.repository.id;
     const sourceName =
       currentNode.repository.owner.login + '/' + currentNode.repository.name;
@@ -66,8 +67,13 @@ const processIssuePayload = async (
   logger,
   payload,
 ) => {
-  if (payload.action === 'deleted') {
-    logger.log('Deleting issue: ' + payload.issue.node_id);
+  if (payload.action === 'deleted' || payload.action === 'transferred') {
+    logger.log(
+      'Deleting issue: ' +
+        payload.issue.node_id +
+        ' received action: ' +
+        payload.action,
+    );
     try {
       await esClient.delete({
         id: payload.issue.node_id,
