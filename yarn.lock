@@ -298,10 +298,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@bit/zencrepes.zindexer.config@0.0.15", "@bit/zencrepes.zindexer.config@^0.0.15":
-  version "0.0.15"
-  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.15.tgz#e9cd49b71a3755240829bc5ca035a60989337a41"
-  integrity sha1-6c1Jtxo3VSQIKbxcoDWmCYkzekE=
+"@bit/zencrepes.zindexer.config@0.0.17", "@bit/zencrepes.zindexer.config@^0.0.17":
+  version "0.0.17"
+  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.17.tgz#bde38df4bd451d59bbe2d46014aa92e8625c5107"
+  integrity sha1-veON9L1FHVm74tRgFKqS6GJcUQc=
 
 "@bit/zencrepes.zindexer.es-utils@^0.0.14":
   version "0.0.14"
@@ -312,12 +312,12 @@
     "@types/js-yaml" "^3.12.1"
     js-yaml "^3.13.1"
 
-"@bit/zencrepes.zindexer.github-issues@^0.0.17":
-  version "0.0.17"
-  resolved "https://node.bit.dev/zencrepes.zindexer.github-issues/-/zencrepes.zindexer.github-issues-0.0.17.tgz#e5042d9eed8bcdc525b861f687cd774cae8bd97c"
-  integrity sha1-5QQtnu2LzcUluGH2h813TK6L2Xw=
+"@bit/zencrepes.zindexer.github-issues@^0.0.20":
+  version "0.0.20"
+  resolved "https://node.bit.dev/zencrepes.zindexer.github-issues/-/zencrepes.zindexer.github-issues-0.0.20.tgz#208815ae3721fae50c62a51470e7144b798284fb"
+  integrity sha1-IIgVrjch+uUMYqUUcOcUS3mChPs=
   dependencies:
-    "@bit/zencrepes.zindexer.config" "0.0.15"
+    "@bit/zencrepes.zindexer.config" "0.0.17"
     "@types/xregexp" "^4.3.0"
     date-fns "^2.8.1"
     graphql-tag "^2.10.1"
@@ -337,19 +337,19 @@
   dependencies:
     graphql-tag "^2.10.1"
 
-"@bit/zencrepes.zindexer.github-projects@^0.0.10":
-  version "0.0.10"
-  resolved "https://node.bit.dev/zencrepes.zindexer.github-projects/-/zencrepes.zindexer.github-projects-0.0.10.tgz#2923de78ae1fb441ff72bc5a982bf247ae3693fb"
-  integrity sha1-KSPeeK4ftEH/crxamCvyR642k/s=
+"@bit/zencrepes.zindexer.github-projects@^0.0.11":
+  version "0.0.11"
+  resolved "https://node.bit.dev/zencrepes.zindexer.github-projects/-/zencrepes.zindexer.github-projects-0.0.11.tgz#5ee5f18da016130c547d10854b48f329aea5a8c2"
+  integrity sha1-XuXxjaAWEwxUfRCFS0jzKa6lqMI=
   dependencies:
     graphql-tag "^2.10.1"
 
-"@bit/zencrepes.zindexer.github-pullrequests@^0.0.15":
-  version "0.0.15"
-  resolved "https://node.bit.dev/zencrepes.zindexer.github-pullrequests/-/zencrepes.zindexer.github-pullrequests-0.0.15.tgz#094141d88b90c0ac30cfcf6b159c0bcf19c65c87"
-  integrity sha1-CUFB2IuQwKwwz89rFZwLzxnGXIc=
+"@bit/zencrepes.zindexer.github-pullrequests@^0.0.17":
+  version "0.0.17"
+  resolved "https://node.bit.dev/zencrepes.zindexer.github-pullrequests/-/zencrepes.zindexer.github-pullrequests-0.0.17.tgz#7979f4db53520c6f1c4c2fbd0f25861d0f1ee249"
+  integrity sha1-eXn021NSDG8cTC+9DyWGHQ8e4kk=
   dependencies:
-    "@bit/zencrepes.zindexer.config" "0.0.15"
+    "@bit/zencrepes.zindexer.config" "0.0.17"
     date-fns "^2.8.1"
     graphql-tag "^2.10.1"
 
@@ -360,10 +360,10 @@
   dependencies:
     graphql-tag "^2.10.1"
 
-"@bit/zencrepes.zindexer.github-repos@^0.0.14":
-  version "0.0.14"
-  resolved "https://node.bit.dev/zencrepes.zindexer.github-repos/-/zencrepes.zindexer.github-repos-0.0.14.tgz#f03881052b09088aa44c65b4cf38dff30f0a15c5"
-  integrity sha1-8DiBBSsJCIqkTGW0zzjf8w8KFcU=
+"@bit/zencrepes.zindexer.github-repos@^0.0.16":
+  version "0.0.16"
+  resolved "https://node.bit.dev/zencrepes.zindexer.github-repos/-/zencrepes.zindexer.github-repos-0.0.16.tgz#d92f01da16d05d9a217905c8346a34f16e6e3414"
+  integrity sha1-2S8B2hbQXZoheQXINGo08W5uNBQ=
   dependencies:
     graphql-tag "^2.10.1"
 
