@@ -23,7 +23,7 @@ export class GhClientService {
   private sleep(ms: number) {
     //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
     // tslint:disable-next-line no-string-based-set-timeout
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   constructor(configService: ConfigService) {
@@ -47,8 +47,8 @@ export class GhClientService {
       });
       return forward(operation).map(
         (response: {
-          errors: Array<object> | undefined;
-          data: { errors: Array<object> };
+          errors: Array<any> | undefined;
+          data: { errors: Array<any> };
         }) => {
           if (response.errors !== undefined && response.errors.length > 0) {
             response.data.errors = response.errors;
