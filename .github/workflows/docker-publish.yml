@@ -21,4 +21,4 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           tags: 'latest,${{ env.RELEASE_VERSION }}'
           buildoptions: '--label APP_VERSION=${{ env.RELEASE_VERSION }}'
-          buildargs: APP_VERSION
+          buildargs: APP_VERSION, RELEASE_VERSION
