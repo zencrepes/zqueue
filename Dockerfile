@@ -1,7 +1,7 @@
 FROM node:alpine as builder
 WORKDIR /app
 
-ENV APP_VERSION=${APP_VERSION}
+ENV APP_VERSION=1.2.1
 ENV RELEASE_VERSION=${RELEASE_VERSION}
 
 COPY package.json .
