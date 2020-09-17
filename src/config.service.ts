@@ -16,6 +16,7 @@ export class ConfigService {
   private readonly logger = new Logger(ConfigService.name);
 
   CONFIG_PATH: string;
+  APP_VERSION: string;
 
   private readonly envConfig: EnvConf;
   private userConfig: zencrepesConfig;
@@ -27,6 +28,7 @@ export class ConfigService {
     const untildify = require('untildify');
     const defaultEnv = {
       CONFIG_DIR: '~/.config/zindexer/',
+      APP_VERSION: 'develop',
     };
 
     this.envConfig = {};
@@ -34,6 +36,10 @@ export class ConfigService {
       process.env.CONFIG_PATH === undefined
         ? untildify(defaultEnv.CONFIG_DIR)
         : untildify(process.env.CONFIG_PATH);
+    this.envConfig.APP_VERSION =
+      process.env.APP_VERSION === undefined
+        ? defaultEnv.APP_VERSION
+        : process.env.APP_VERSION;
 
     // Look for configuration file or initialize if it couldn't find any
     fse.ensureDirSync(this.envConfig.CONFIG_DIR);
@@ -61,6 +67,7 @@ export class ConfigService {
       );
       this.setUserConfig(userConfig);
     }
+    this.logger.log('Started zqueue version: ' + this.envConfig.APP_VERSION);
   }
 
   get(key: string): string {
