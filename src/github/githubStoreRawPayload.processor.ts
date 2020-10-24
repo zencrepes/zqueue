@@ -22,7 +22,7 @@ export class GithubStoreRawPayloadProcessor {
     const userConfig = this.configService.getUserConfig();
 
     this.logger.log(
-      'storeRaw - Processing en event of type: ' + job.data.eventType,
+      'storeRaw - Processing an event of type: ' + job.data.eventType,
     );
 
     storeRawPayload(

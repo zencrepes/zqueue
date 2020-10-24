@@ -22,7 +22,7 @@ export class GithubStorePayloadProcessor {
     const userConfig = this.configService.getUserConfig();
 
     this.logger.log(
-      'storeNodePayload - Processing en event of type: ' + job.data.eventType,
+      'storeNodePayload - Processing an event of type: ' + job.data.eventType,
     );
 
     storePayload(
