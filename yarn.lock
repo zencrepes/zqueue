@@ -324,10 +324,15 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@bit/zencrepes.zindexer.config@0.0.17", "@bit/zencrepes.zindexer.config@^0.0.17":
+"@bit/zencrepes.zindexer.config@0.0.17":
   version "0.0.17"
   resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.17.tgz#bde38df4bd451d59bbe2d46014aa92e8625c5107"
   integrity sha1-veON9L1FHVm74tRgFKqS6GJcUQc=
+
+"@bit/zencrepes.zindexer.config@^0.0.19":
+  version "0.0.19"
+  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.19.tgz#5e3863f3723257855f95dda00c5e48a7623f0b86"
+  integrity sha1-Xjhj83IyV4Vfld2gDF5Ip2I/C4Y=
 
 "@bit/zencrepes.zindexer.es-utils@^0.0.14":
   version "0.0.14"
@@ -406,6 +411,11 @@
   integrity sha1-LGn3xiw3fDYIcPiTeqPZxb+cQGw=
   dependencies:
     graphql-tag "^2.10.1"
+
+"@bit/zencrepes.zindexer.junit-states@^0.0.3":
+  version "0.0.3"
+  resolved "https://node.bit.dev/zencrepes.zindexer.junit-states/-/zencrepes.zindexer.junit-states-0.0.3.tgz#f11dc2c2cc9faf2cc2aa6ac7c5b87a20cd019fee"
+  integrity sha1-8R3CwsyfryzCqmrHxbh6IM0Bn+4=
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"

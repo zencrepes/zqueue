@@ -24,7 +24,7 @@ export class GithubProcessor {
     const userConfig = this.configService.getUserConfig();
 
     this.logger.log(
-      'fetchRemoteNode - Processing en event of type: ' + job.data.eventType,
+      'fetchRemoteNode - Processing sn event of type: ' + job.data.eventType,
     );
     fetchNode(
       this.ghClientService,
