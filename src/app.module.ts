@@ -7,12 +7,12 @@ import { GhClientModule } from './ghClient.module';
 import { EsClientModule } from './esClient.module';
 
 import { GithubModule } from './github/github.module';
-import { JunitModule } from './junit/junit.module';
+import { TestingModule } from './testing/testing.module';
 
 @Module({
   imports: [
     GithubModule,
-    JunitModule,
+    TestingModule,
     ConfigModule.register(),
     GhClientModule,
     EsClientModule,
