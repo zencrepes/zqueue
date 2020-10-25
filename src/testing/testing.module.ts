@@ -1,7 +1,7 @@
 import { BullModule, BullModuleOptions } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { JunitController } from './junit.controller';
-import { JunitStorePayloadProcessor } from './junitStorePayload.processor';
+import { TestingController } from './testing.controller';
+import { TestingStorePayloadProcessor } from './testingStorePayload.processor';
 
 import { ConfigModule } from '../config.module';
 import { ConfigService } from '../config.service';
@@ -23,7 +23,7 @@ import { EsClientModule } from '../esClient.module';
     // ),
     BullModule.registerQueueAsync(
       {
-        name: 'junitstorepayload',
+        name: 'testingstorepayload',
         imports: [ConfigModule.register()],
         inject: [ConfigService],
         useFactory: async (
@@ -39,9 +39,9 @@ import { EsClientModule } from '../esClient.module';
     ConfigModule.register(),
     EsClientModule,
   ],
-  controllers: [JunitController],
+  controllers: [TestingController],
   providers: [
-    JunitStorePayloadProcessor,
+    TestingStorePayloadProcessor,
   ],
 })
-export class JunitModule {}
+export class TestingModule {}

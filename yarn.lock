@@ -329,10 +329,10 @@
   resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.17.tgz#bde38df4bd451d59bbe2d46014aa92e8625c5107"
   integrity sha1-veON9L1FHVm74tRgFKqS6GJcUQc=
 
-"@bit/zencrepes.zindexer.config@^0.0.19":
-  version "0.0.19"
-  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.19.tgz#5e3863f3723257855f95dda00c5e48a7623f0b86"
-  integrity sha1-Xjhj83IyV4Vfld2gDF5Ip2I/C4Y=
+"@bit/zencrepes.zindexer.config@^0.0.20":
+  version "0.0.20"
+  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.20.tgz#251742f0f387c9c06170a3ade8b07c0dba43bcbb"
+  integrity sha1-JRdC8POHycBhcKOt6LB8DbpDvLs=
 
 "@bit/zencrepes.zindexer.es-utils@^0.0.14":
   version "0.0.14"
@@ -412,10 +412,13 @@
   dependencies:
     graphql-tag "^2.10.1"
 
-"@bit/zencrepes.zindexer.junit-states@^0.0.3":
-  version "0.0.3"
-  resolved "https://node.bit.dev/zencrepes.zindexer.junit-states/-/zencrepes.zindexer.junit-states-0.0.3.tgz#f11dc2c2cc9faf2cc2aa6ac7c5b87a20cd019fee"
-  integrity sha1-8R3CwsyfryzCqmrHxbh6IM0Bn+4=
+"@bit/zencrepes.zindexer.testing-states@^0.0.5":
+  version "0.0.5"
+  resolved "https://node.bit.dev/zencrepes.zindexer.testing-states/-/zencrepes.zindexer.testing-states-0.0.5.tgz#24b1bb1e1f7f5ae594e0a3b4b7d92a662119af58"
+  integrity sha1-JLG7Hh9/WuWU4KO0t9kqZiEZr1g=
+  dependencies:
+    "@types/uuid" "^8.3.0"
+    uuid "^8.3.1"
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
@@ -1032,6 +1035,11 @@
   integrity sha512-KswB5C7Kwduwjj04Ykz+AjvPcfgv/37Za24O2EDzYNbwyzOo8+ydtvzUfZ5UMguiVu29Gx44l1A6VsPPcmYu9w==
   dependencies:
     source-map "^0.6.1"
+
+"@types/uuid@^8.3.0":
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.0.tgz#215c231dff736d5ba92410e6d602050cce7e273f"
+  integrity sha512-eQ9qFW/fhfGJF8WKHGEHZEyVWfZxrT+6CLIJGBcZPfxUh/+BnEj+UCGYMlr9qZuX/2AltsvwrGqp0LhEW8D0zQ==
 
 "@types/webpack-sources@*":
   version "1.4.2"
@@ -7447,6 +7455,11 @@ uuid@^3.3.2:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
+
+uuid@^8.3.1:
+  version "8.3.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.1.tgz#2ba2e6ca000da60fce5a196954ab241131e05a31"
+  integrity sha512-FOmRr+FmWEIG8uhZv6C2bTgEVXsHk08kE7mPlrBbEe+c3r9pjceVPgupIfNIhc4yx55H69OXANrUaSuu9eInKg==
 
 v8-compile-cache@^2.0.3:
   version "2.1.1"

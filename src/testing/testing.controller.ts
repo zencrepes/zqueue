@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { Queue } from 'bull';
 import * as crypto from 'crypto';
 
-import { StateNode } from '@bit/zencrepes.zindexer.junit-states';
+import { StateNode } from '@bit/zencrepes.zindexer.testing-states';
 import { ConfigService } from '../config.service';
 
 //https://gist.github.com/stigok/57d075c1cf2a609cb758898c0b202428
@@ -30,12 +30,12 @@ const verifySignature = (
   }
 };
 
-@Controller('junit')
-export class JunitController {
-  private readonly logger = new Logger(JunitController.name);
+@Controller('testing')
+export class TestingController {
+  private readonly logger = new Logger(TestingController.name);
 
   constructor(
-    @InjectQueue('junitstorepayload') private readonly storePayload: Queue,
+    @InjectQueue('testingstorepayload') private readonly storePayload: Queue,
     private readonly configService: ConfigService,
   ) {}
 
@@ -56,7 +56,7 @@ export class JunitController {
     if (
       verifySignature(
         signature,
-        userConfig.junit.webhook.secret,
+        userConfig.testing.webhook.secret,
         JSON.stringify(payload),
       ) !== true
     ) {
@@ -68,7 +68,7 @@ export class JunitController {
 
     this.logger.log(`Received a JUnit State event for: ${payload.name}, version: ${payload.version}`);
 
-    await this.storePayload.add('junitstore', payload);
+    await this.storePayload.add('testingstore', payload);
     
     return {success: true}
   }
