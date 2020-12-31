@@ -66,7 +66,7 @@ export class TestingController {
       return {success: false}
     }
 
-    this.logger.log(`Received a JUnit State event for: ${payload.name}, version: ${payload.version}`);
+    this.logger.log(`Received a State event for: ${payload.name}, version: ${payload.version}`);
 
     await this.storePayload.add('testingstore', payload);
     
