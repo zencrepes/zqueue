@@ -9,18 +9,6 @@ import { EsClientModule } from '../esClient.module';
 
 @Module({
   imports: [
-    // BullModule.registerQueue(
-    //   {
-    //     name: 'github',
-    //     limiter: { max: 1, duration: 1000 }, // Limiting to one query processed by second
-    //   },
-    //   {
-    //     name: 'storepayload',
-    //   },
-    //   {
-    //     name: 'storerawpayload',
-    //   },
-    // ),
     BullModule.registerQueueAsync(
       {
         name: 'testingstorepayload',
