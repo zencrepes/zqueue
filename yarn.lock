@@ -329,10 +329,10 @@
   resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.17.tgz#bde38df4bd451d59bbe2d46014aa92e8625c5107"
   integrity sha1-veON9L1FHVm74tRgFKqS6GJcUQc=
 
-"@bit/zencrepes.zindexer.config@^0.0.22":
-  version "0.0.22"
-  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.22.tgz#7882cb9b3dfdea11884b7878b47197ae1abd5af6"
-  integrity sha1-eILLmz396hGIS3h4tHGXrhq9WvY=
+"@bit/zencrepes.zindexer.config@^0.0.28":
+  version "0.0.28"
+  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.28.tgz#872c0ab840cb06c9440e8dc6a6b688a4cd62acff"
+  integrity sha1-hywKuEDLBslEDo3GpraIpM1irP8=
 
 "@bit/zencrepes.zindexer.es-utils@^0.0.14":
   version "0.0.14"
@@ -411,6 +411,14 @@
   integrity sha1-LGn3xiw3fDYIcPiTeqPZxb+cQGw=
   dependencies:
     graphql-tag "^2.10.1"
+
+"@bit/zencrepes.zindexer.testing-perfs@^0.0.28":
+  version "0.0.28"
+  resolved "https://node.bit.dev/zencrepes.zindexer.testing-perfs/-/zencrepes.zindexer.testing-perfs-0.0.28.tgz#8290f016311bea0a4acb38a1139da116ac909295"
+  integrity sha1-gpDwFjEb6gpKyzihE52hFqyQkpU=
+  dependencies:
+    "@types/uuid" "^8.3.0"
+    uuid "^8.3.1"
 
 "@bit/zencrepes.zindexer.testing-runs@^0.0.3":
   version "0.0.3"
