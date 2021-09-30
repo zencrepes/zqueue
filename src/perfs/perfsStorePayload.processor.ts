@@ -57,6 +57,6 @@ export class PerfsStorePayloadProcessor {
     }
 
     // Push single document to Elasticsearch
-    await pushEsNodes(esClient, userConfig.elasticsearch.dataIndices.testingStates, [state], console.log);
+    await pushEsNodes(esClient, userConfig.elasticsearch.dataIndices.testingPerfs, [state], console.log);
   }
 }
