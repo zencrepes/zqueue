@@ -33,7 +33,7 @@
     "@bit/zencrepes.zindexer.github-repos": "^0.0.16",
     "@bit/zencrepes.zindexer.github-stargazers": "^0.0.10",
     "@bit/zencrepes.zindexer.github-watchers": "^0.0.10",
-    "@bit/zencrepes.zindexer.testing-perfs": "^0.0.28",
+    "@bit/zencrepes.zindexer.testing-perfs": "^0.0.30",
     "@bit/zencrepes.zindexer.testing-runs": "^0.0.3",
     "@bit/zencrepes.zindexer.testing-states": "^0.0.5",
     "@elastic/elasticsearch": "^7.9.0",

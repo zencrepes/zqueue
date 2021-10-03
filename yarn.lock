@@ -412,10 +412,10 @@
   dependencies:
     graphql-tag "^2.10.1"
 
-"@bit/zencrepes.zindexer.testing-perfs@^0.0.28":
-  version "0.0.28"
-  resolved "https://node.bit.dev/zencrepes.zindexer.testing-perfs/-/zencrepes.zindexer.testing-perfs-0.0.28.tgz#8290f016311bea0a4acb38a1139da116ac909295"
-  integrity sha1-gpDwFjEb6gpKyzihE52hFqyQkpU=
+"@bit/zencrepes.zindexer.testing-perfs@^0.0.30":
+  version "0.0.30"
+  resolved "https://node.bit.dev/zencrepes.zindexer.testing-perfs/-/zencrepes.zindexer.testing-perfs-0.0.30.tgz#efa9ceb225d8a4e21c2b22fad3ff3ebca5fca996"
+  integrity sha1-76nOsiXYpOIcKyL60/8+vKX8qZY=
   dependencies:
     "@types/uuid" "^8.3.0"
     uuid "^8.3.1"
