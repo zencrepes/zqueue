@@ -2,7 +2,7 @@ import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 
-import { esMapping, esSettings, PerfNode, getId } from '@bit/zencrepes.zindexer.testing-perfs';
+import { esMapping, esSettings, getId } from '@bit/zencrepes.zindexer.testing-perfs';
 import { checkEsIndex, pushEsNodes } from '@bit/zencrepes.zindexer.es-utils';
 
 import { ConfigService } from '../config.service';
@@ -29,9 +29,21 @@ export class PerfsStorePayloadProcessor {
     // Check if the index exists, create it if it does not    
     await checkEsIndex(esClient, userConfig.elasticsearch.dataIndices.testingPerfs, esMapping, esSettings, console.log);
 
+    // From the job data, get an array containing all available transaction name
+    const transactionNames = []
+    for (const run of job.data.runs) {
+      for (const [k, v] of Object.entries(run.statistics)) {
+        const transaction: any = v
+        if (!transactionNames.includes(transaction.transaction)) {
+          transactionNames.push(transaction.transaction)
+        }
+      }
+    }
+
     // Transforming the object, objective is just to match to GitHub's to be consistent with the rest of the app
-    const state: PerfNode = {
+    const state = {
       ...job.data,
+      id: getId(job.data),
       resources: {
         edges: job.data.resources.map((r) => {
           return {
@@ -43,11 +55,24 @@ export class PerfsStorePayloadProcessor {
         }),
         totalCount: job.data.resources.length
       },
+      transactions: {
+        edges: transactionNames.map((t) => {
+          return {
+            node: {
+              name: t,
+            }
+          }
+        }),
+        totalCount: transactionNames.length
+      },   
       runs: {
         edges: job.data.runs.map((r) => {
           return {
             node: {
               ...r,
+              statistics: Object.entries(r.statistics).map((e: any) => {
+                return e[1]
+              }),
               id: getId(r)
             }
           }
