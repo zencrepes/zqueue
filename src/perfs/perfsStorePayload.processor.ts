@@ -49,7 +49,8 @@ export class PerfsStorePayloadProcessor {
           return {
             node: {
               ...r,
-              id: getId(r)
+              id: getId(r),
+              name_size: `${r.name}_${r.size}`
             }
           }
         }),
