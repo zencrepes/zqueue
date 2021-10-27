@@ -391,10 +391,10 @@
   dependencies:
     graphql-tag "^2.10.1"
 
-"@bit/zencrepes.zindexer.github-repos@^0.0.16":
-  version "0.0.16"
-  resolved "https://node.bit.dev/zencrepes.zindexer.github-repos/-/zencrepes.zindexer.github-repos-0.0.16.tgz#d92f01da16d05d9a217905c8346a34f16e6e3414"
-  integrity sha1-2S8B2hbQXZoheQXINGo08W5uNBQ=
+"@bit/zencrepes.zindexer.github-repos@^0.0.18":
+  version "0.0.18"
+  resolved "https://node.bit.dev/zencrepes.zindexer.github-repos/-/zencrepes.zindexer.github-repos-0.0.18.tgz#ebcb9cb4ef815a7e2f7fbe85c35f6b6b93cdc1be"
+  integrity sha1-68uctO+BWn4vf76Fw19ra5PNwb4=
   dependencies:
     graphql-tag "^2.10.1"
 
