@@ -44,6 +44,9 @@ export class PerfsStorePayloadProcessor {
     const state = {
       ...job.data,
       id: getId(job.data),
+      verified: false,
+      description: job.data.description !== undefined ? job.data.description : '',
+      analysis: '',
       resources: {
         edges: job.data.resources.map((r) => {
           return {
@@ -65,7 +68,17 @@ export class PerfsStorePayloadProcessor {
           }
         }),
         totalCount: transactionNames.length
-      },   
+      },
+      tags: job.data.tags !== undefined ? {
+        edges: job.data.tags.map((t) => {
+          return {
+            node: {
+              ...t
+            }
+          }
+        }),
+        totalCount: job.data.tags.length
+      } : { edges: [], totalCount: 0 },
       runs: {
         edges: job.data.runs.map((r) => {
           return {
