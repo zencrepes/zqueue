@@ -8,6 +8,15 @@ import * as path from 'path';
 
 import { zencrepesConfig, defaultConfig } from '@bit/zencrepes.zindexer.config';
 
+// Since bit is not working anymore, adding this extra interface manually
+interface zencrepesConfigAppend {
+  elasticsearch: {
+    dataIndices: {
+      testingCases: string;
+    }
+  }
+}
+
 export interface EnvConf {
   [key: string]: string;
 }
@@ -19,7 +28,7 @@ export class ConfigService {
   APP_VERSION: string;
 
   private readonly envConfig: EnvConf;
-  private userConfig: zencrepesConfig;
+  private userConfig: zencrepesConfig & zencrepesConfigAppend;
 
   constructor() {
     // Initialize config directory:
@@ -74,11 +83,11 @@ export class ConfigService {
     return this.envConfig[key];
   }
 
-  getUserConfig(): zencrepesConfig {
+  getUserConfig(): zencrepesConfig & zencrepesConfigAppend {
     return this.userConfig;
   }
 
-  setUserConfig(userConfig: zencrepesConfig) {
+  setUserConfig(userConfig: zencrepesConfig & zencrepesConfigAppend) {
     this.userConfig = userConfig;
   }
 }

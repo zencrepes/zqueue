@@ -4,6 +4,7 @@ import { Job } from 'bull';
 
 import { esMapping, esSettings, StateNode, getId } from '@bit/zencrepes.zindexer.testing-states';
 import { esMapping as esMappingRuns, esSettings as esSettingsRuns, RunNode, getRunId} from '@bit/zencrepes.zindexer.testing-runs';
+import { esMapping as esMappingCases, esSettings as esSettingsCases, CaseNode, getCaseId} from './cases';
 import { checkEsIndex, pushEsNodes } from '@bit/zencrepes.zindexer.es-utils';
 
 import { ConfigService } from '../config.service';
@@ -31,7 +32,7 @@ export class TestingStorePayloadProcessor {
     await checkEsIndex(esClient, userConfig.elasticsearch.dataIndices.testingStates, esMapping, esSettings, console.log);
 
     // Transforming the object, objective is just to match to GitHub's to be consistent with the rest of the app
-    const state: StateNode = {
+    let state: StateNode = {
       ...job.data,
       full: job.data.name + '_' + job.data.version,
       dependencies: {
@@ -48,6 +49,12 @@ export class TestingStorePayloadProcessor {
       }
     }
 
+    // Cases is a more recent addition, it should not be present in the state, not to pollute the index
+    // with unnecessary data
+    if ((state as any).cases !== undefined) {
+      delete (state as any).cases;
+    }
+
     // Push single document to Elasticsearch
     await pushEsNodes(esClient, userConfig.elasticsearch.dataIndices.testingStates, [state], console.log);
 
@@ -58,7 +65,7 @@ export class TestingStorePayloadProcessor {
     await checkEsIndex(esClient, userConfig.elasticsearch.dataIndices.testingRuns, esMappingRuns, esSettingsRuns, console.log);
 
     // Transforming the object, objective is just to match to GitHub's to be consistent with the rest of the app
-    const run: RunNode = {
+    let run: RunNode = {
       ...job.data,
       id: getRunId(job.data),
       full: job.data.name + '_' + job.data.version,
@@ -78,8 +85,39 @@ export class TestingStorePayloadProcessor {
       }
     }
 
+    // Cases is a more recent addition, it should not be present in the state, not to pollute the index
+    // with unnecessary data
+    if ((run as any).cases !== undefined) {
+      delete (run as any).cases;
+    }
+
     // Push single document to Elasticsearch
     await pushEsNodes(esClient, userConfig.elasticsearch.dataIndices.testingRuns, [run], console.log);
 
+    if (job.data.cases !== undefined && job.data.cases.length > 0) {
+      // Check if the index exists, create it if it does not    
+      await checkEsIndex(esClient, userConfig.elasticsearch.dataIndices.testingCases, esMappingCases, esSettingsCases, console.log);    
+
+      // Populating testing Cases
+      this.logger.log(`Event for: ${job.data.name}, version: ${job.data.version} - Pushing ${job.data.cases.length} Cases`);
+
+      const cases: CaseNode[] = job.data.cases.map((c) => {
+        const caseObj = {
+          ...c,
+          id: getCaseId(c),
+          full: c.suite + ' - ' + c.name,
+          runId: run.id,
+          url: run.url,
+          caseSuccessRate: Math.round(c.caseSuccess * 100 / c.caseTotal),
+          caseFailureRate: Math.round(c.caseFailure * 100 / c.caseTotal),
+          project: run.name
+        }
+        return caseObj
+      })
+
+      // Push single document to Elasticsearch
+      await pushEsNodes(esClient, userConfig.elasticsearch.dataIndices.testingCases, cases, console.log);
+
+    }
   }
 }
