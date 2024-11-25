@@ -32,7 +32,7 @@ export class TestingStorePayloadProcessor {
     await checkEsIndex(esClient, userConfig.elasticsearch.dataIndices.testingStates, esMapping, esSettings, console.log);
 
     // Transforming the object, objective is just to match to GitHub's to be consistent with the rest of the app
-    let state: StateNode = {
+    const state: StateNode = {
       ...job.data,
       full: job.data.name + '_' + job.data.version,
       dependencies: {
@@ -65,7 +65,7 @@ export class TestingStorePayloadProcessor {
     await checkEsIndex(esClient, userConfig.elasticsearch.dataIndices.testingRuns, esMappingRuns, esSettingsRuns, console.log);
 
     // Transforming the object, objective is just to match to GitHub's to be consistent with the rest of the app
-    let run: RunNode = {
+    const run: RunNode = {
       ...job.data,
       id: getRunId(job.data),
       full: job.data.name + '_' + job.data.version,
