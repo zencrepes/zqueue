@@ -1,4 +1,4 @@
-FROM node:alpine as builder
+FROM node:22-alpine as builder
 
 ARG APP_VERSION_ARG=latest
 
