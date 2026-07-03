@@ -1,9 +1,10 @@
 name: Lint and test
-# This workflow is triggered on pushes to the repository.
+
 on:
+  pull_request:
   push:
     branches:
-      - '**'
+      - master
 
 jobs:
   lint:
@@ -11,11 +12,13 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: node:alpine
+      # Node is pinned to 22 to match the runtime image (see Dockerfile);
+      # @nestjs/bull 0.1.x is incompatible with Node >= 23.
+      image: node:22-alpine
 
     steps:
-      - uses: actions/checkout@v2
-      - run: yarn
+      - uses: actions/checkout@v4
+      - run: yarn install --frozen-lockfile
       - run: yarn run lint:ci --max-warnings 1
 
   tests:
@@ -24,25 +27,22 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: node:lts-alpine
+      image: node:22-alpine
 
     steps:
-      - uses: actions/checkout@v2
-      - run: yarn
-      - run: yarn run test
+      - uses: actions/checkout@v4
+      - run: yarn install --frozen-lockfile
+      - run: yarn run test:cov
 
   build:
     needs: [lint, tests]
     name: Build
     runs-on: ubuntu-latest
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     container:
-      image: node:lts-alpine
+      image: node:22-alpine
 
     steps:
-      - uses: actions/checkout@v2
-      - run: yarn
-      - run: npm install -g typescript@3.8.3
-      - run: tsc --version
+      - uses: actions/checkout@v4
+      - run: yarn install --frozen-lockfile
       - run: yarn run build

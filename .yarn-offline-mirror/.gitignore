@@ -1,0 +1,7 @@
+# Only the zencrepes.zindexer (bit.dev) tarballs are vendored: the bit.dev
+# registry is gone, so they cannot be fetched anymore. Everything else is
+# available from the npm registry and does not need to be committed, even
+# though yarn copies every downloaded tarball into this mirror.
+*
+!.gitignore
+!zencrepes.zindexer.*.tgz
