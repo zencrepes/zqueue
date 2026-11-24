@@ -1,54 +1,25 @@
-import { InjectQueue } from '@nestjs/bull';
-import { Logger, Controller, Post, Body, Req, Headers } from '@nestjs/common';
-import { Request } from 'express';
-import { Queue } from 'bull';
-import * as crypto from 'crypto';
+import { InjectQueue } from '@nestjs/bullmq';
+import {
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Logger,
+  Post,
+  Req,
+  UnauthorizedException,
+  type RawBodyRequest,
+} from '@nestjs/common';
+import type { Queue } from 'bullmq';
+import type { Request } from 'express';
 
-import { WebhookPayload } from './webhookPayload.type';
-import { ConfigService } from '../config.service';
-
-//https://gist.github.com/stigok/57d075c1cf2a609cb758898c0b202428
-const verifySignature = (
-  githubSignature: string,
-  confSecret: string,
-  payload: string,
-) => {
-  // const crypto = require('crypto');
-  const hmac = crypto.createHmac('sha1', confSecret);
-  const digest = Buffer.from(
-    'sha1=' + hmac.update(payload).digest('hex'),
-    'utf8',
-  );
-  const checksum = Buffer.from(githubSignature, 'utf8');
-  if (
-    checksum.length !== digest.length ||
-    !crypto.timingSafeEqual(digest, checksum)
-  ) {
-    return false;
-  } else {
-    return true;
-  }
-};
-
-const shouldProcessEvent = (
-  githubEvent: string,
-  includeGithubEvents: string[],
-  excludeGithubEvents: string[],
-) => {
-  if (excludeGithubEvents.includes(githubEvent)) {
-    return false;
-  }
-  if (includeGithubEvents.includes(githubEvent)) {
-    return true;
-  }
-  if (includeGithubEvents.includes('*')) {
-    return true;
-  }
-  if (excludeGithubEvents.includes('*')) {
-    return false;
-  }
-  return true;
-};
+import { ConfigService } from '../config/config.service.js';
+import { verifyWebhookSignature } from '../shared/verifyWebhookSignature.js';
+import { buildEventDocument } from './buildEventDocument.js';
+import { eventIndexName } from './eventIndexName.js';
+import { shouldProcessEvent } from './shouldProcessEvent.js';
 
 @Controller('github')
 export class GithubController {
@@ -56,124 +27,59 @@ export class GithubController {
 
   constructor(
     @InjectQueue('github') private readonly githubQueue: Queue,
-    @InjectQueue('storepayload') private readonly storePayload: Queue,
-    @InjectQueue('storerawpayload') private readonly storeRawpayload: Queue,
-    private readonly configService: ConfigService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
   ) {}
 
   @Post('webhook')
+  @HttpCode(HttpStatus.ACCEPTED)
   async processWebhook(
-    @Body() payload: WebhookPayload,
-    @Req() request: Request,
-    @Headers() headers: Headers,
+    @Body() payload: Record<string, unknown>,
+    @Req() request: RawBodyRequest<Request>,
+    @Headers() headers: Record<string, string | undefined>,
   ) {
-    const userConfig = this.configService.getUserConfig();
-    const eventType =
-      headers['x-github-event'] !== undefined
-        ? headers['x-github-event']
-        : 'noheader';
+    const webhookConfig = this.configService.getUserConfig().github.webhook;
 
-    const signature =
-      headers['x-hub-signature'] !== undefined
-        ? headers['x-hub-signature']
-        : 'noheader';
-
-    if (
-      verifySignature(
-        signature,
-        userConfig.github.webhook.secret,
-        JSON.stringify(payload),
-      ) !== true
-    ) {
+    const validSignature = verifyWebhookSignature(
+      request.rawBody ?? Buffer.from(''),
+      webhookConfig.secret,
+      {
+        sha256: headers['x-hub-signature-256'],
+        sha1: headers['x-hub-signature'],
+      },
+    );
+    if (!validSignature) {
       this.logger.warn(
-        'Received an incorrect x-hub-signature from GitHub, please check the secrets on both ends',
+        'Rejected a GitHub webhook delivery: missing or invalid signature, ' +
+          'please check the secrets on both ends',
       );
-      return;
+      throw new UnauthorizedException('Invalid webhook signature');
     }
 
-    const githubEvent = userConfig.github.webhook.events.find(
-      e => e.githubEvent === eventType,
-    );
-    const zcEntity =
-      githubEvent !== undefined ? githubEvent.zencrepesEntity : eventType;
-
+    const event = headers['x-github-event'] ?? 'unknown';
+    const action = typeof payload.action === 'string' ? payload.action : '';
     this.logger.log(
-      'Received a GitHub event of type: ' +
-        eventType +
-        ' - ZenCrepes entity: ' +
-        zcEntity +
-        ' - Action: ' +
-        payload.action,
+      `Received a GitHub event of type: ${event}` +
+        (action === '' ? '' : ` - action: ${action}`),
     );
 
-    if (eventType === 'ping') {
-      this.logger.log('Received a ping from GitHub, doing nothing');
-      return;
+    if (
+      !shouldProcessEvent(
+        event,
+        webhookConfig.includeGithubEvents,
+        webhookConfig.excludeGithubEvents,
+      )
+    ) {
+      this.logger.log(
+        `Event type (${event}) is excluded from recording by configuration`,
+      );
+      return { success: true, queued: false };
     }
 
-    if (
-      shouldProcessEvent(
-        eventType,
-        userConfig.github.webhook.fetchNode.includeGithubEvents,
-        userConfig.github.webhook.fetchNode.excludeGithubEvents,
-      ) === true
-    ) {
-      if (githubEvent !== undefined) {
-        await this.githubQueue.add('fetchRemoteNode', {
-          payload: payload,
-          eventType: zcEntity,
-        });
-      } else {
-        this.logger.log(
-          'Received an event type (' +
-            eventType +
-            ') not known by fetchNode configuration, cannot fetch its node content',
-        );
-      }
-    } else {
-      this.logger.log(
-        'Received an event type (' +
-          eventType +
-          ') excluded from processing by fetchNode configuration',
-      );
-    }
-
-    if (
-      shouldProcessEvent(
-        eventType,
-        userConfig.github.webhook.nodePayload.includeGithubEvents,
-        userConfig.github.webhook.nodePayload.excludeGithubEvents,
-      ) === true
-    ) {
-      await this.storePayload.add('store', {
-        payload: payload,
-        eventType: zcEntity,
-      });
-    } else {
-      this.logger.log(
-        'Received an event type (' +
-          eventType +
-          ') excluded from processing by nodePayload configuration',
-      );
-    }
-
-    if (
-      shouldProcessEvent(
-        eventType,
-        userConfig.github.webhook.timelinePayload.includeGithubEvents,
-        userConfig.github.webhook.timelinePayload.excludeGithubEvents,
-      ) === true
-    ) {
-      await this.storeRawpayload.add('store', {
-        payload: payload,
-        eventType: zcEntity,
-      });
-    } else {
-      this.logger.log(
-        'Received an event type (' +
-          eventType +
-          ') excluded from processing by timelinePayload configuration',
-      );
-    }
+    const document = buildEventDocument(event, payload, headers, new Date());
+    await this.githubQueue.add('record', {
+      index: eventIndexName(webhookConfig.esIndexPrefix, event),
+      document,
+    });
+    return { success: true, queued: true };
   }
 }

@@ -1,68 +1,56 @@
-import { Logger } from '@nestjs/common';
-import * as crypto from 'crypto';
+import { createHmac } from 'node:crypto';
 
-import { PerfsController } from './perfs.controller';
-import { ConfigService } from '../config.service';
+import { Logger, UnauthorizedException } from '@nestjs/common';
+import type { Queue } from 'bullmq';
 
-const SECRET = 'test-perfs-secret';
+import type { ConfigService } from '../config/config.service.js';
+import { PerfsController } from './perfs.controller.js';
+import type { PerfsPayload } from './perfsPayload.types.js';
 
-const sign = (payload, secret: string = SECRET) => {
-  const hmac = crypto.createHmac('sha1', secret);
-  return 'sha1=' + hmac.update(JSON.stringify(payload)).digest('hex');
+const SECRET = 'perfs-webhook-test-secret';
+
+const sign256 = (body: string) =>
+  'sha256=' + createHmac('sha256', SECRET).update(body).digest('hex');
+
+const payload = { name: 'nightly-perf', runs: [] } as unknown as PerfsPayload;
+
+const buildController = () => {
+  const queue = { add: vi.fn() };
+  const configService = {
+    getUserConfig: () => ({ testing: { webhook: { secret: SECRET } } }),
+  } as unknown as ConfigService;
+  return {
+    controller: new PerfsController(queue as unknown as Queue, configService),
+    queue,
+  };
 };
 
 describe('PerfsController', () => {
-  let controller: PerfsController;
-  let storePayloadQueue: { add: jest.Mock };
-
   beforeAll(() => {
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
-    jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-  });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    storePayloadQueue = { add: jest.fn() };
-    const configService = {
-      getUserConfig: () => ({
-        testing: { webhook: { secret: SECRET } },
-      }),
-    } as ConfigService;
-    controller = new PerfsController(storePayloadQueue as any, configService);
-  });
-
-  it('rejects a payload with an invalid signature', async () => {
-    const payload = { name: 'my-perf-run' } as any;
-
-    const result = await controller.processWebhook(payload, {} as any, {
-      'x-hub-signature': sign(payload, 'wrong-secret'),
-    } as any);
-
-    expect(result).toEqual({ success: false });
-    expect(storePayloadQueue.add).not.toHaveBeenCalled();
-  });
-
-  it('rejects a payload without a signature header', async () => {
-    const payload = { name: 'my-perf-run' } as any;
-
-    const result = await controller.processWebhook(
-      payload,
-      {} as any,
-      {} as any,
-    );
-
-    expect(result).toEqual({ success: false });
-    expect(storePayloadQueue.add).not.toHaveBeenCalled();
+    vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
   });
 
   it('queues a correctly signed payload', async () => {
-    const payload = { name: 'my-perf-run' } as any;
-
-    const result = await controller.processWebhook(payload, {} as any, {
-      'x-hub-signature': sign(payload),
-    } as any);
-
+    const { controller, queue } = buildController();
+    const result = await controller.processWebhook(
+      payload,
+      { rawBody: Buffer.from(JSON.stringify(payload)) } as never,
+      { 'x-hub-signature-256': sign256(JSON.stringify(payload)) },
+    );
     expect(result).toEqual({ success: true });
-    expect(storePayloadQueue.add).toHaveBeenCalledWith('perfsstore', payload);
+    expect(queue.add).toHaveBeenCalledWith('store', payload);
+  });
+
+  it('rejects an invalid signature with 401', async () => {
+    const { controller, queue } = buildController();
+    await expect(
+      controller.processWebhook(
+        payload,
+        { rawBody: Buffer.from(JSON.stringify(payload)) } as never,
+        {},
+      ),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(queue.add).not.toHaveBeenCalled();
   });
 });

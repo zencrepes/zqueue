@@ -1,0 +1,60 @@
+# Deployment stack: zqueue + Redis + a secured single-node OpenSearch.
+# docs/setup.md walks through this file, the credentials setup included.
+#
+#   cp config/config.yml.example config/config.yml   # then edit it
+#   export OPENSEARCH_INITIAL_ADMIN_PASSWORD='<a strong admin password>'
+#   docker compose up -d
+services:
+  zqueue:
+    image: zencrepes/zqueue:latest
+    restart: unless-stopped
+    ports:
+      - '3003:3003'
+    volumes:
+      - ./config:/root/.config/zindexer
+    depends_on:
+      - redis
+      - opensearch
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  opensearch:
+    image: opensearchproject/opensearch:3
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
+      # Only read on the FIRST boot of a blank data volume.
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_INITIAL_ADMIN_PASSWORD:?set a strong admin password}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    # Uncomment to reach OpenSearch from the host, for the credentials setup
+    # of docs/setup.md:
+    # ports:
+    #   - '9200:9200'
+
+  # OpenSearch Dashboards (the OpenSearch fork of Kibana), to browse the
+  # recorded events: http://localhost:5601, log in as admin. Remove the
+  # service if you do not need a UI, and do not expose the port publicly.
+  dashboards:
+    image: opensearchproject/opensearch-dashboards:3
+    restart: unless-stopped
+    environment:
+      - OPENSEARCH_HOSTS=["https://opensearch:9200"]
+    ports:
+      - '5601:5601'
+    depends_on:
+      - opensearch
+
+volumes:
+  redis-data:
+  opensearch-data:

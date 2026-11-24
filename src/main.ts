@@ -1,11 +1,20 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import * as express from 'express';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.use(express.json({limit: '50mb' }))
-  app.use(express.urlencoded({ limit: '50mb', extended: false, parameterLimit: 50000 }))  
-  await app.listen(3003);
-}
-bootstrap();
+import { AppModule } from './app.module.js';
+
+const bootstrap = async () => {
+  // rawBody keeps the bytes GitHub signed, for signature verification.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
+  app.useBodyParser('json', { limit: '50mb' });
+  app.useBodyParser('urlencoded', {
+    limit: '50mb',
+    extended: false,
+    parameterLimit: 50000,
+  });
+  await app.listen(process.env.PORT ?? 3003);
+};
+
+await bootstrap();
