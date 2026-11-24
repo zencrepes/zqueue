@@ -3,8 +3,8 @@ import { homedir } from 'node:os';
 import { resolveConfigDir } from './resolveConfigDir.js';
 
 describe('resolveConfigDir', () => {
-  it('defaults to ~/.config/zindexer/ with the tilde expanded', () => {
-    expect(resolveConfigDir({})).toBe(homedir() + '/.config/zindexer/');
+  it('defaults to ~/.config/zencrepes/ with the tilde expanded', () => {
+    expect(resolveConfigDir({})).toBe(homedir() + '/.config/zencrepes/');
   });
 
   it('uses CONFIG_PATH when set', () => {

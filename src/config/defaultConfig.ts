@@ -1,10 +1,10 @@
 import type { ZqueueConfig } from './config.types.js';
 
-// The configuration file is shared with zindexer (~/.config/zindexer/config.yml),
-// which owns additional sections (jira, circleci, ...) that zqueue ignores.
+// The configuration file (~/.config/zencrepes/config.yml) belongs to zqueue;
+// unknown sections are ignored, so the file may carry keys for other tools.
 export const defaultConfig: ZqueueConfig = {
   elasticsearch: {
-    engine: 'elasticsearch',
+    engine: 'opensearch',
     host: 'http://127.0.0.1:9200',
     sslCa: '',
     sslVerify: true,

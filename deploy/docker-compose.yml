@@ -11,7 +11,7 @@ services:
     ports:
       - '3003:3003'
     volumes:
-      - ./config:/root/.config/zindexer
+      - ./config:/root/.config/zencrepes
     depends_on:
       - redis
       - opensearch

@@ -27,10 +27,13 @@ export class ConfigService {
 
     if (initConfigFile(configDir)) {
       this.logger.error(
-        'Initialized configuration file with defaults in: ' +
+        'No configuration file was present; a default one was created at: ' +
           path.join(configDir, 'config.yml'),
       );
-      this.logger.error('Please EDIT the configuration file first');
+      this.logger.error(
+        'Stopping zqueue: edit the configuration file (secrets, search ' +
+          'engine credentials), then start zqueue again',
+      );
       process.exit(1);
     }
 
