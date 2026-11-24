@@ -46,27 +46,23 @@ git clone https://github.com/zencrepes/zqueue.git
 cd zqueue
 docker compose up -d        # Redis on :6379, secured OpenSearch on :9210
 npm install
-npm run start:dev           # listens on http://localhost:3003
+npm run start:dev           # first start: writes the config file, then stops
 ```
 
-The development compose file sets the OpenSearch admin password to `zQueue!Dev2026` (override it with the `OPENSEARCH_INITIAL_ADMIN_PASSWORD` environment variable). A matching `~/.config/zencrepes/config.yml`:
+The first start finds no configuration file, writes `~/.config/zencrepes/config.yml` with the defaults, and stops. The defaults already point at the compose stack above (`https://localhost:9210`, user `admin`, self-signed certificate accepted), so only three keys need a value: the OpenSearch admin password (`zQueue!Dev2026`, unless the `OPENSEARCH_INITIAL_ADMIN_PASSWORD` environment variable overrode it on the first boot of the container) and the two webhook secrets.
 
 ```yaml
 elasticsearch:
-  engine: opensearch
-  host: https://localhost:9210
-  username: admin
   password: zQueue!Dev2026
-  sslVerify: false
-redis:
-  host: redis://localhost:6379
 github:
   webhook:
-    secret: local-dev-secret
+    secret: <a random value>
 testing:
   webhook:
-    secret: local-dev-secret
+    secret: <a random value>
 ```
+
+Start zqueue again with `npm run start:dev`: it listens on http://localhost:3003.
 
 Send a signed test event and read it back:
 
