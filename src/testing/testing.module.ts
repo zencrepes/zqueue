@@ -1,35 +1,18 @@
-import { BullModule, BullModuleOptions } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { TestingController } from './testing.controller';
-import { TestingStorePayloadProcessor } from './testingStorePayload.processor';
 
-import { ConfigModule } from '../config.module';
-import { ConfigService } from '../config.service';
-import { EsClientModule } from '../esClient.module';
+import { ConfigModule } from '../config/config.module.js';
+import { SearchClientModule } from '../search/searchClient.module.js';
+import { TestingController } from './testing.controller.js';
+import { TestingStoreProcessor } from './testingStore.processor.js';
 
 @Module({
   imports: [
-    BullModule.registerQueueAsync(
-      {
-        name: 'testingstorepayload',
-        imports: [ConfigModule.register()],
-        inject: [ConfigService],
-        useFactory: async (
-          configService: ConfigService,
-        ): Promise<BullModuleOptions> => {
-          const userConfig = configService.getUserConfig();
-          return {
-            redis: userConfig.redis.host,
-          };
-        },
-      },
-    ),
-    ConfigModule.register(),
-    EsClientModule,
+    BullModule.registerQueue({ name: 'testing' }),
+    ConfigModule,
+    SearchClientModule,
   ],
   controllers: [TestingController],
-  providers: [
-    TestingStorePayloadProcessor,
-  ],
+  providers: [TestingStoreProcessor],
 })
 export class TestingModule {}

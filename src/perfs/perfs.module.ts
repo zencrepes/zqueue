@@ -1,35 +1,18 @@
-import { BullModule, BullModuleOptions } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { PerfsController } from './perfs.controller';
-import { PerfsStorePayloadProcessor } from './perfsStorePayload.processor';
 
-import { ConfigModule } from '../config.module';
-import { ConfigService } from '../config.service';
-import { EsClientModule } from '../esClient.module';
+import { ConfigModule } from '../config/config.module.js';
+import { SearchClientModule } from '../search/searchClient.module.js';
+import { PerfsController } from './perfs.controller.js';
+import { PerfsStoreProcessor } from './perfsStore.processor.js';
 
 @Module({
   imports: [
-    BullModule.registerQueueAsync(
-      {
-        name: 'perfsstorepayload',
-        imports: [ConfigModule.register()],
-        inject: [ConfigService],
-        useFactory: async (
-          configService: ConfigService,
-        ): Promise<BullModuleOptions> => {
-          const userConfig = configService.getUserConfig();
-          return {
-            redis: userConfig.redis.host,
-          };
-        },
-      },
-    ),
-    ConfigModule.register(),
-    EsClientModule,
+    BullModule.registerQueue({ name: 'perfs' }),
+    ConfigModule,
+    SearchClientModule,
   ],
   controllers: [PerfsController],
-  providers: [
-    PerfsStorePayloadProcessor,
-  ],
+  providers: [PerfsStoreProcessor],
 })
 export class PerfsModule {}

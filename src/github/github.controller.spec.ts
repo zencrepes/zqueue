@@ -1,200 +1,128 @@
-import { Logger } from '@nestjs/common';
-import * as crypto from 'crypto';
+import { createHmac } from 'node:crypto';
 
-import { GithubController } from './github.controller';
-import { ConfigService } from '../config.service';
-import { WebhookPayload } from './webhookPayload.type';
+import { Logger, UnauthorizedException } from '@nestjs/common';
+import type { Queue } from 'bullmq';
 
-const SECRET = 'test-webhook-secret';
+import type { ConfigService } from '../config/config.service.js';
+import { GithubController } from './github.controller.js';
 
-const sign = (payload: WebhookPayload, secret: string = SECRET) => {
-  const hmac = crypto.createHmac('sha1', secret);
-  return 'sha1=' + hmac.update(JSON.stringify(payload)).digest('hex');
+const SECRET = 'github-webhook-test-secret';
+
+const sign256 = (body: string) =>
+  'sha256=' + createHmac('sha256', SECRET).update(body).digest('hex');
+
+const buildController = (webhookOverrides = {}) => {
+  const queue = { add: vi.fn() };
+  const configService = {
+    getUserConfig: () => ({
+      github: {
+        webhook: {
+          secret: SECRET,
+          includeGithubEvents: ['*'],
+          excludeGithubEvents: ['push'],
+          esIndexPrefix: 'gh_events_',
+          ...webhookOverrides,
+        },
+      },
+    }),
+  } as unknown as ConfigService;
+  const controller = new GithubController(
+    queue as unknown as Queue,
+    configService,
+  );
+  return { controller, queue };
 };
 
-const buildUserConfig = (webhookOverrides = {}) => ({
-  github: {
-    webhook: {
-      secret: SECRET,
-      events: [
-        { githubEvent: 'issues', zencrepesEntity: 'issues' },
-        { githubEvent: 'label', zencrepesEntity: 'labels' },
-      ],
-      fetchNode: { includeGithubEvents: ['*'], excludeGithubEvents: [] },
-      nodePayload: { includeGithubEvents: ['*'], excludeGithubEvents: [] },
-      timelinePayload: { includeGithubEvents: ['*'], excludeGithubEvents: [] },
-      ...webhookOverrides,
-    },
-  },
-});
+const callWebhook = (
+  controller: GithubController,
+  payload: Record<string, unknown>,
+  headers: Record<string, string | undefined>,
+  rawBody?: Buffer,
+) =>
+  controller.processWebhook(
+    payload,
+    // Only rawBody is read from the request.
+    { rawBody: rawBody ?? Buffer.from(JSON.stringify(payload)) } as never,
+    headers,
+  );
 
 describe('GithubController', () => {
-  let controller: GithubController;
-  let githubQueue: { add: jest.Mock };
-  let storePayloadQueue: { add: jest.Mock };
-  let storeRawPayloadQueue: { add: jest.Mock };
-  let userConfig;
-
-  const callWebhook = (payload: WebhookPayload, headers = {}) => {
-    return controller.processWebhook(payload, {} as any, headers as any);
-  };
-
   beforeAll(() => {
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
-    jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
   });
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    githubQueue = { add: jest.fn() };
-    storePayloadQueue = { add: jest.fn() };
-    storeRawPayloadQueue = { add: jest.fn() };
-    userConfig = buildUserConfig();
-    const configService = {
-      getUserConfig: () => userConfig,
-    } as ConfigService;
-    controller = new GithubController(
-      githubQueue as any,
-      storePayloadQueue as any,
-      storeRawPayloadQueue as any,
-      configService,
-    );
-  });
-
-  it('ignores requests with an invalid signature', async () => {
-    const payload = { action: 'opened', issue: { node_id: 'abc' } };
-
-    await callWebhook(payload, {
+  it('queues a signed event with its target index', async () => {
+    const { controller, queue } = buildController();
+    const payload = { action: 'opened', issue: { number: 1 } };
+    const result = await callWebhook(controller, payload, {
       'x-github-event': 'issues',
-      'x-hub-signature': sign(payload, 'wrong-secret'),
+      'x-github-delivery': 'guid-1',
+      'x-hub-signature-256': sign256(JSON.stringify(payload)),
     });
-
-    expect(githubQueue.add).not.toHaveBeenCalled();
-    expect(storePayloadQueue.add).not.toHaveBeenCalled();
-    expect(storeRawPayloadQueue.add).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: true, queued: true });
+    expect(queue.add).toHaveBeenCalledTimes(1);
+    const [jobName, jobData] = queue.add.mock.calls[0];
+    expect(jobName).toBe('record');
+    expect(jobData.index).toBe('gh_events_issues');
+    expect(jobData.document.id).toBe('guid-1');
+    expect(jobData.document.body.payload).toEqual(payload);
   });
 
-  it('ignores requests without a signature header', async () => {
-    const payload = { action: 'opened', issue: { node_id: 'abc' } };
-
-    await callWebhook(payload, { 'x-github-event': 'issues' });
-
-    expect(githubQueue.add).not.toHaveBeenCalled();
-    expect(storePayloadQueue.add).not.toHaveBeenCalled();
-    expect(storeRawPayloadQueue.add).not.toHaveBeenCalled();
+  it('rejects an invalid signature with 401', async () => {
+    const { controller, queue } = buildController();
+    const payload = { action: 'opened' };
+    await expect(
+      callWebhook(controller, payload, {
+        'x-github-event': 'issues',
+        'x-hub-signature-256': 'sha256=invalid',
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(queue.add).not.toHaveBeenCalled();
   });
 
-  it('does nothing on a ping event', async () => {
-    const payload = { action: 'ping' } as WebhookPayload;
+  it('rejects a delivery without any signature', async () => {
+    const { controller } = buildController();
+    await expect(
+      callWebhook(controller, { action: 'x' }, { 'x-github-event': 'issues' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
 
-    await callWebhook(payload, {
+  it('rejects when the raw body was tampered with', async () => {
+    const { controller } = buildController();
+    const payload = { action: 'opened' };
+    await expect(
+      callWebhook(
+        controller,
+        payload,
+        {
+          'x-github-event': 'issues',
+          'x-hub-signature-256': sign256(JSON.stringify(payload)),
+        },
+        Buffer.from('{"action":"tampered"}'),
+      ),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('skips an excluded event without queuing', async () => {
+    const { controller, queue } = buildController();
+    const payload = { ref: 'refs/heads/main' };
+    const result = await callWebhook(controller, payload, {
+      'x-github-event': 'push',
+      'x-hub-signature-256': sign256(JSON.stringify(payload)),
+    });
+    expect(result).toEqual({ success: true, queued: false });
+    expect(queue.add).not.toHaveBeenCalled();
+  });
+
+  it('records any event type, ping included', async () => {
+    const { controller, queue } = buildController();
+    const payload = { zen: 'Keep it logically awesome.' };
+    const result = await callWebhook(controller, payload, {
       'x-github-event': 'ping',
-      'x-hub-signature': sign(payload),
+      'x-hub-signature-256': sign256(JSON.stringify(payload)),
     });
-
-    expect(githubQueue.add).not.toHaveBeenCalled();
-    expect(storePayloadQueue.add).not.toHaveBeenCalled();
-    expect(storeRawPayloadQueue.add).not.toHaveBeenCalled();
-  });
-
-  it('queues a known event on all three queues with its zencrepes entity', async () => {
-    const payload = { action: 'opened', issue: { node_id: 'abc' } };
-
-    await callWebhook(payload, {
-      'x-github-event': 'issues',
-      'x-hub-signature': sign(payload),
-    });
-
-    expect(githubQueue.add).toHaveBeenCalledWith('fetchRemoteNode', {
-      payload,
-      eventType: 'issues',
-    });
-    expect(storePayloadQueue.add).toHaveBeenCalledWith('store', {
-      payload,
-      eventType: 'issues',
-    });
-    expect(storeRawPayloadQueue.add).toHaveBeenCalledWith('store', {
-      payload,
-      eventType: 'issues',
-    });
-  });
-
-  it('maps the github event to its configured zencrepes entity', async () => {
-    const payload = { action: 'created', label: { node_id: 'lbl' } };
-
-    await callWebhook(payload, {
-      'x-github-event': 'label',
-      'x-hub-signature': sign(payload),
-    });
-
-    expect(githubQueue.add).toHaveBeenCalledWith('fetchRemoteNode', {
-      payload,
-      eventType: 'labels',
-    });
-  });
-
-  it('does not queue a node fetch for events absent from the events mapping', async () => {
-    const payload = { action: 'completed' } as WebhookPayload;
-
-    await callWebhook(payload, {
-      'x-github-event': 'workflow_run',
-      'x-hub-signature': sign(payload),
-    });
-
-    expect(githubQueue.add).not.toHaveBeenCalled();
-    // Payload storage does not depend on the events mapping
-    expect(storePayloadQueue.add).toHaveBeenCalledWith('store', {
-      payload,
-      eventType: 'workflow_run',
-    });
-    expect(storeRawPayloadQueue.add).toHaveBeenCalledWith('store', {
-      payload,
-      eventType: 'workflow_run',
-    });
-  });
-
-  it('skips queues whose configuration excludes the event', async () => {
-    userConfig = buildUserConfig({
-      fetchNode: {
-        includeGithubEvents: ['*'],
-        excludeGithubEvents: ['issues'],
-      },
-      nodePayload: {
-        includeGithubEvents: ['*'],
-        excludeGithubEvents: ['issues'],
-      },
-      timelinePayload: { includeGithubEvents: ['*'], excludeGithubEvents: [] },
-    });
-    const payload = { action: 'opened', issue: { node_id: 'abc' } };
-
-    await callWebhook(payload, {
-      'x-github-event': 'issues',
-      'x-hub-signature': sign(payload),
-    });
-
-    expect(githubQueue.add).not.toHaveBeenCalled();
-    expect(storePayloadQueue.add).not.toHaveBeenCalled();
-    expect(storeRawPayloadQueue.add).toHaveBeenCalled();
-  });
-
-  it('processes an explicitly included event even when everything else is excluded', async () => {
-    userConfig = buildUserConfig({
-      fetchNode: {
-        includeGithubEvents: ['issues'],
-        excludeGithubEvents: ['*'],
-      },
-      nodePayload: { includeGithubEvents: [], excludeGithubEvents: ['*'] },
-      timelinePayload: { includeGithubEvents: [], excludeGithubEvents: ['*'] },
-    });
-    const payload = { action: 'opened', issue: { node_id: 'abc' } };
-
-    await callWebhook(payload, {
-      'x-github-event': 'issues',
-      'x-hub-signature': sign(payload),
-    });
-
-    expect(githubQueue.add).toHaveBeenCalled();
-    expect(storePayloadQueue.add).not.toHaveBeenCalled();
-    expect(storeRawPayloadQueue.add).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: true, queued: true });
+    expect(queue.add.mock.calls[0][1].index).toBe('gh_events_ping');
   });
 });

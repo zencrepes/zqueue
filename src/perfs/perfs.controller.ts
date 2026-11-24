@@ -1,75 +1,61 @@
-import { InjectQueue } from '@nestjs/bull';
-import { Logger, Controller, Post, Body, Req, Headers } from '@nestjs/common';
-import { Request } from 'express';
-import { Queue } from 'bull';
-import * as crypto from 'crypto';
+import { InjectQueue } from '@nestjs/bullmq';
+import {
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Logger,
+  Post,
+  Req,
+  UnauthorizedException,
+  type RawBodyRequest,
+} from '@nestjs/common';
+import type { Queue } from 'bullmq';
+import type { Request } from 'express';
 
-import { PerfNode } from '@bit/zencrepes.zindexer.testing-perfs';
-import { ConfigService } from '../config.service';
-
-//https://gist.github.com/stigok/57d075c1cf2a609cb758898c0b202428
-const verifySignature = (
-  payloadSignature: string,
-  confSecret: string,
-  payload: string,
-) => {
-  // const crypto = require('crypto');
-  const hmac = crypto.createHmac('sha1', confSecret);
-  const digest = Buffer.from(
-    'sha1=' + hmac.update(payload).digest('hex'),
-    'utf8',
-  );
-  const checksum = Buffer.from(payloadSignature, 'utf8');
-  if (
-    checksum.length !== digest.length ||
-    !crypto.timingSafeEqual(digest, checksum)
-  ) {
-    return false;
-  } else {
-    return true;
-  }
-};
+import { ConfigService } from '../config/config.service.js';
+import { verifyWebhookSignature } from '../shared/verifyWebhookSignature.js';
+import type { PerfsPayload } from './perfsPayload.types.js';
 
 @Controller('perfs')
 export class PerfsController {
   private readonly logger = new Logger(PerfsController.name);
 
   constructor(
-    @InjectQueue('perfsstorepayload') private readonly storePayload: Queue,
-    private readonly configService: ConfigService,
+    @InjectQueue('perfs') private readonly perfsQueue: Queue,
+    @Inject(ConfigService) private readonly configService: ConfigService,
   ) {}
 
   @Post('webhook')
+  @HttpCode(HttpStatus.ACCEPTED)
   async processWebhook(
-    @Body() payload: PerfNode,
-    @Req() request: Request,
-    @Headers() headers: Headers,
+    @Body() payload: PerfsPayload,
+    @Req() request: RawBodyRequest<Request>,
+    @Headers() headers: Record<string, string | undefined>,
   ) {
-    const userConfig = this.configService.getUserConfig();
+    const secret = this.configService.getUserConfig().testing.webhook.secret;
 
-    const signature =
-      headers['x-hub-signature'] !== undefined
-        ? headers['x-hub-signature']
-        : 'noheader';
-
-    // Using the same security mechanism than for GitHub webhooks
-    if (
-      verifySignature(
-        signature,
-        userConfig.testing.webhook.secret,
-        JSON.stringify(payload),
-      ) !== true
-    ) {
+    // The same signature mechanism as GitHub webhooks.
+    const validSignature = verifyWebhookSignature(
+      request.rawBody ?? Buffer.from(''),
+      secret,
+      {
+        sha256: headers['x-hub-signature-256'],
+        sha1: headers['x-hub-signature'],
+      },
+    );
+    if (!validSignature) {
       this.logger.warn(
-        'Received an incorrect x-hub-signature from your source, please check the secrets on both ends',
+        'Rejected a perfs webhook delivery: missing or invalid signature, ' +
+          'please check the secrets on both ends',
       );
-      return {success: false}
+      throw new UnauthorizedException('Invalid webhook signature');
     }
 
     this.logger.log(`Received a Perf event for: ${payload.name}`);
-
-    await this.storePayload.add('perfsstore', payload);
-    
-    return {success: true}
+    await this.perfsQueue.add('store', payload);
+    return { success: true };
   }
 }

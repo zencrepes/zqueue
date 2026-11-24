@@ -1,12 +1,19 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Get, Inject } from '@nestjs/common';
+
+import { ConfigService } from './config/config.service.js';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getStatus() {
+    return {
+      name: 'zqueue',
+      version: this.configService.get('APP_VERSION'),
+      status: 'ok',
+    };
   }
 }

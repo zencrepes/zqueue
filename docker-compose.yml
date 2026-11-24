@@ -1,0 +1,40 @@
+# Local development dependencies.
+#
+#   docker compose up -d                            # Redis + OpenSearch (secured)
+#   docker compose --profile elasticsearch up -d    # also start Elasticsearch on :9211
+#
+# The host ports avoid 9200 on purpose: developers often keep a tunnel to a
+# real cluster there.
+#
+# OpenSearch 3 ships with the security plugin enabled: it listens on
+# https with a self-signed certificate and the admin user below. Point zqueue
+# at it with:
+#
+#   elasticsearch:
+#     engine: opensearch
+#     host: https://localhost:9210
+#     username: admin
+#     password: <OPENSEARCH_INITIAL_ADMIN_PASSWORD>
+#     sslVerify: false
+services:
+  redis:
+    image: redis:8-alpine
+    ports:
+      - '6379:6379'
+
+  opensearch:
+    image: opensearchproject/opensearch:3
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_INITIAL_ADMIN_PASSWORD:-zQueue!Dev2026}
+    ports:
+      - '9210:9200'
+
+  elasticsearch:
+    profiles: ['elasticsearch']
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - '9211:9200'
