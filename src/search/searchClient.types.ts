@@ -29,8 +29,5 @@ export interface SearchClient {
   checkHealth: () => Promise<{ status: string }>;
   indexExists: (index: string) => Promise<boolean>;
   createIndex: (index: string, definition: IndexDefinition) => Promise<void>;
-  bulkIndex: (
-    index: string,
-    documents: BulkDocument[],
-  ) => Promise<BulkResult>;
+  bulkIndex: (index: string, documents: BulkDocument[]) => Promise<BulkResult>;
 }

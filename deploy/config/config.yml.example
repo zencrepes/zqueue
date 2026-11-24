@@ -1,0 +1,25 @@
+# zqueue configuration for the deploy stack (see docs/setup.md).
+# Copy to config.yml, then replace every CHANGE_ME.
+elasticsearch:
+  engine: opensearch
+  # Service name on the compose network
+  host: https://opensearch:9200
+  # The dedicated user created in docs/setup.md section 4
+  username: zqueue
+  password: CHANGE_ME
+  # The demo certificate OpenSearch ships with is self-signed. Install real
+  # certificates in production and set this back to true (sslCa points at
+  # your CA when it is a private one).
+  sslVerify: false
+redis:
+  host: redis://redis:6379
+github:
+  webhook:
+    # Same value as in the GitHub webhook form; try: openssl rand -hex 32
+    secret: CHANGE_ME
+    includeGithubEvents: ['*']
+    excludeGithubEvents: []
+    esIndexPrefix: gh_events_
+testing:
+  webhook:
+    secret: CHANGE_ME

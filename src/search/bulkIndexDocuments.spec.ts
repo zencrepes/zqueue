@@ -40,7 +40,12 @@ describe('bulkIndexDocuments', () => {
       .mockResolvedValueOnce({ indexed: 1, errors: [] });
     const client = { bulkIndex } as unknown as SearchClient;
 
-    const result = await bulkIndexDocuments(client, 'idx', buildDocuments(2), 1);
+    const result = await bulkIndexDocuments(
+      client,
+      'idx',
+      buildDocuments(2),
+      1,
+    );
     expect(result).toEqual({
       indexed: 1,
       errors: [{ id: 'doc-0', status: 400, reason: 'nope' }],

@@ -49,7 +49,12 @@ describe('buildEventDocument', () => {
   });
 
   it('handles payloads without repository or sender', () => {
-    const document = buildEventDocument('ping', { zen: 'Design.' }, {}, receivedAt);
+    const document = buildEventDocument(
+      'ping',
+      { zen: 'Design.' },
+      {},
+      receivedAt,
+    );
     expect(document.body.repository).toBeNull();
     expect(document.body.organization).toBeNull();
     expect(document.body.sender).toBeNull();

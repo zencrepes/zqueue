@@ -1,7 +1,4 @@
-import type {
-  IndexDefinition,
-  SearchClient,
-} from './searchClient.types.js';
+import type { IndexDefinition, SearchClient } from './searchClient.types.js';
 
 // Creates the index when it does not exist yet. The ensured set memoizes
 // positive checks per process, so one exists() round-trip happens per index.

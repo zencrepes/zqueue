@@ -8,7 +8,7 @@ Zqueue is the ZenCrepes webhook listener. It records every event it receives int
 
 You can find ZenCrepes documentation on [docs.zencrepes.io](https://docs.zencrepes.io/), issues should be created [here](https://github.com/zencrepes/zencrepes/issues)
 
-This readme only contains developer-focused details.
+This readme only contains developer-focused details. [docs/setup.md](docs/setup.md) walks through the full setup: getting started, deploying with docker compose, creating the OpenSearch credentials from a blank instance, and configuring the GitHub webhook.
 
 # What zqueue does
 
@@ -100,3 +100,5 @@ curl -X POST http://localhost:3003/github/webhook \
 docker build -t zencrepes/zqueue .
 docker run -p 3003:3003 -v ~/.config/zindexer:/root/.config/zindexer zencrepes/zqueue
 ```
+
+For a full stack (zqueue, Redis and a secured OpenSearch), use the compose file in [deploy/](deploy) and follow [docs/setup.md](docs/setup.md).

@@ -13,9 +13,7 @@ export const transformPerf = (payload: PerfsPayload): BulkDocument => {
   const transactionNames = [
     ...new Set(
       payload.runs.flatMap((run) =>
-        Object.values(run.statistics).map(
-          (statistic) => statistic.transaction,
-        ),
+        Object.values(run.statistics).map((statistic) => statistic.transaction),
       ),
     ),
   ];

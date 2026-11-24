@@ -83,4 +83,15 @@ describe('TestingStoreProcessor', () => {
       't_runs_',
     ]);
   });
+
+  it('logs a job failure reported by the worker', () => {
+    const errorSpy = vi
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    const { processor } = buildProcessor();
+    processor.onFailed(undefined, new Error('cluster unreachable'));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('cluster unreachable'),
+    );
+  });
 });

@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject, Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
 
@@ -24,6 +24,15 @@ export class PerfsStoreProcessor extends WorkerHost {
     private readonly searchClientService: SearchClientService,
   ) {
     super();
+  }
+
+  // BullMQ retries a failed job silently; this makes each failure visible.
+  @OnWorkerEvent('failed')
+  onFailed(job: Job<PerfsPayload> | undefined, error: Error): void {
+    this.logger.error(
+      `Perfs job ${job?.id ?? 'unknown'} failed ` +
+        `(attempt ${job?.attemptsMade ?? '?'}): ${error.message}`,
+    );
   }
 
   async process(job: Job<PerfsPayload>): Promise<void> {

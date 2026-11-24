@@ -50,4 +50,26 @@ describe('PerfsStoreProcessor', () => {
     expect(bulkIndex.mock.calls[0][0]).toBe('t_perfs_');
     expect(bulkIndex.mock.calls[0][1][0].body.name).toBe('nightly-perf');
   });
+
+  it('logs a job failure reported by the worker', () => {
+    const errorSpy = vi
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    const configService = {
+      getUserConfig: () => ({
+        elasticsearch: { dataIndices: { testingPerfs: 't_perfs_' } },
+      }),
+    } as unknown as ConfigService;
+    const searchClientService = {
+      getClient: () => ({}),
+    } as unknown as SearchClientService;
+    const processor = new PerfsStoreProcessor(
+      configService,
+      searchClientService,
+    );
+    processor.onFailed(undefined, new Error('bulk rejected'));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('bulk rejected'),
+    );
+  });
 });

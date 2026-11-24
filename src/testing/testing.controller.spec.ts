@@ -30,10 +30,7 @@ const buildController = () => {
     getUserConfig: () => ({ testing: { webhook: { secret: SECRET } } }),
   } as unknown as ConfigService;
   return {
-    controller: new TestingController(
-      queue as unknown as Queue,
-      configService,
-    ),
+    controller: new TestingController(queue as unknown as Queue, configService),
     queue,
   };
 };

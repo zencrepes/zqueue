@@ -13,7 +13,11 @@ const buildProcessor = (bulkResult: {
   const indexExists = vi.fn().mockResolvedValue(false);
   const createIndex = vi.fn().mockResolvedValue(undefined);
   const bulkIndex = vi.fn().mockResolvedValue(bulkResult);
-  const client = { indexExists, createIndex, bulkIndex } as unknown as SearchClient;
+  const client = {
+    indexExists,
+    createIndex,
+    bulkIndex,
+  } as unknown as SearchClient;
   const service = { getClient: () => client } as unknown as SearchClientService;
   return {
     processor: new GithubEventsProcessor(service),
@@ -68,6 +72,17 @@ describe('GithubEventsProcessor', () => {
     });
     await expect(processor.process(job)).rejects.toThrow(
       'Bulk indexing into gh_events_issues failed',
+    );
+  });
+
+  it('logs a job failure reported by the worker', () => {
+    const errorSpy = vi
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    const { processor } = buildProcessor({ indexed: 1, errors: [] });
+    processor.onFailed(job, new Error('security_exception'));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('security_exception'),
     );
   });
 });

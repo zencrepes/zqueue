@@ -20,8 +20,7 @@ describe('SearchClientService', () => {
 
   it('builds the client for the configured engine', () => {
     expect(
-      new SearchClientService(buildConfigService('elasticsearch'))
-        .getClient()
+      new SearchClientService(buildConfigService('elasticsearch')).getClient()
         .engine,
     ).toBe('elasticsearch');
     expect(
