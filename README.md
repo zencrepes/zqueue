@@ -8,7 +8,7 @@ Zqueue is the ZenCrepes webhook listener. It records every event it receives int
 
 You can find ZenCrepes documentation on [docs.zencrepes.io](https://docs.zencrepes.io/), issues should be created [here](https://github.com/zencrepes/zencrepes/issues)
 
-This readme only contains developer-focused details. [docs/setup.md](docs/setup.md) walks through the full setup: getting started, deploying with docker compose, creating the OpenSearch credentials from a blank instance, and configuring the GitHub webhook.
+This readme only contains developer-focused details. [docs/setup.md](docs/setup.md) walks through the full setup: getting started, deploying with docker compose, creating the OpenSearch credentials from a blank instance, configuring the GitHub webhook, and browsing the recorded data with OpenSearch Dashboards.
 
 # What zqueue does
 
@@ -64,6 +64,8 @@ Start the local dependencies (Redis, and a secured OpenSearch):
 ```bash
 docker compose up -d
 ```
+
+Two optional profiles: `docker compose --profile dashboards up -d` adds OpenSearch Dashboards (the OpenSearch fork of Kibana) on [http://localhost:5601](http://localhost:5601), and `--profile elasticsearch` adds an Elasticsearch on port 9211.
 
 Then:
 

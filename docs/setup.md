@@ -1,6 +1,6 @@
 # Setup and deployment
 
-This guide takes you from a blank machine to a zqueue instance that records GitHub events into a secured OpenSearch cluster. It covers local development, a docker-compose deployment, the creation of OpenSearch credentials from a blank instance, and the GitHub webhook configuration.
+This guide takes you from a blank machine to a zqueue instance that records GitHub events into a secured OpenSearch cluster. It covers local development, a docker-compose deployment, the creation of OpenSearch credentials from a blank instance, the GitHub webhook configuration, and browsing the recorded data with OpenSearch Dashboards.
 
 ## Prerequisites
 
@@ -101,6 +101,7 @@ What the stack does:
 - **zqueue** listens on port 3003 and reads `./config/config.yml` (mounted at `/root/.config/zindexer`).
 - **redis** buffers the deliveries; its data survives restarts in the `redis-data` volume.
 - **opensearch** runs single-node with the security plugin enabled (TLS plus authentication) and stores its data in the `opensearch-data` volume. Port 9200 stays internal to the compose network; publish it only if you need direct access.
+- **dashboards** serves OpenSearch Dashboards on port 5601, to browse the recorded events (section 6). Remove the service if you do not need a UI.
 
 On the very first boot of a blank instance, OpenSearch creates the `admin` user with the password you pass through `OPENSEARCH_INITIAL_ADMIN_PASSWORD`. The variable only takes effect on first boot: changing it later does not change the password.
 
@@ -166,13 +167,26 @@ In the GitHub organization (or a single repository): **Settings → Webhooks →
 - **Secret**: the value of `github.webhook.secret` in `config.yml`
 - **Events**: "Send me everything" records all events; zqueue stores each type in its own index. To drop types you do not want, list them in `github.webhook.excludeGithubEvents`.
 
-GitHub sends a `ping` event on creation. Check the delivery got a `202` under **Recent Deliveries**, then look for the `gh_events_ping` index. The `zqueue` role writes but does not read, so browse the data with the `admin` user (or a dedicated read-only user):
+GitHub sends a `ping` event on creation. Check the delivery got a `202` under **Recent Deliveries**, then look for the `gh_events_ping` index. The `zqueue` role writes but does not read, so browse the data with the `admin` user (or a dedicated read-only user), with `curl` or with OpenSearch Dashboards (section 6):
 
 ```bash
 curl -k -u "$ADMIN" 'https://localhost:9200/_cat/indices/gh_events_*?v'
 ```
 
 A rejected delivery shows a `401` in Recent Deliveries, and zqueue logs the reason. Redeliveries are safe: the GitHub delivery GUID is the document id, so a redelivered event overwrites its own document instead of creating a duplicate.
+
+## 6. Browse the data with OpenSearch Dashboards
+
+OpenSearch Dashboards is the OpenSearch equivalent of Kibana (it started as a fork of Kibana 7.10). The deploy stack of section 3 serves it on [http://localhost:5601](http://localhost:5601); the development stack of section 2 starts it with `docker compose --profile dashboards up -d`.
+
+1. Log in as `admin`. The `zqueue` user of section 4 cannot log in: its role only writes.
+2. Open the menu, then **Dashboards Management** → **Index patterns** → **Create index pattern**.
+3. Enter `gh_events_*` and pick `receivedAt` as the time field.
+4. Open **Discover** to search and filter the recorded events, and build charts from them under **Visualize**.
+
+The testing and performance indices work the same way, with the patterns `t_states_*`, `t_runs_*`, `t_cases_*` (time field `createdAt`) and `t_perfs_*` (time field `startedAt`).
+
+With `engine: elasticsearch`, the equivalent tool is [Kibana](https://www.elastic.co/kibana), pointed at the same cluster.
 
 ## Troubleshooting
 
