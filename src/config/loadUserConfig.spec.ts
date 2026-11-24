@@ -32,7 +32,7 @@ describe('loadUserConfig', () => {
     const config = loadUserConfig(configDir);
     expect(config.elasticsearch.host).toBe('http://search.example.com:9200');
     expect(config.elasticsearch.engine).toBe('opensearch');
-    expect(config.elasticsearch.sslVerify).toBe(true);
+    expect(config.elasticsearch.sslVerify).toBe(false);
     expect(config.github.webhook.secret).toBe('shhh');
     expect(config.github.webhook.includeGithubEvents).toEqual(['*']);
     expect(config.github.webhook.esIndexPrefix).toBe('gh_events_');
