@@ -47,7 +47,7 @@ describe('ConfigService', () => {
     const service = new ConfigService();
     expect(service.getUserConfig().github.webhook.secret).toBe('topsecret');
     // Defaults are merged in for keys the file does not state.
-    expect(service.getUserConfig().elasticsearch.engine).toBe('elasticsearch');
+    expect(service.getUserConfig().elasticsearch.engine).toBe('opensearch');
     expect(service.get('CONFIG_DIR')).toBe(configDir);
     expect(service.get('APP_VERSION')).toBe(
       process.env.APP_VERSION ?? 'develop',

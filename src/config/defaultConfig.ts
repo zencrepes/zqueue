@@ -4,7 +4,7 @@ import type { ZqueueConfig } from './config.types.js';
 // unknown sections are ignored, so the file may carry keys for other tools.
 export const defaultConfig: ZqueueConfig = {
   elasticsearch: {
-    engine: 'elasticsearch',
+    engine: 'opensearch',
     host: 'http://127.0.0.1:9200',
     sslCa: '',
     sslVerify: true,

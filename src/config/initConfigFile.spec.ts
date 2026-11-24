@@ -23,7 +23,7 @@ describe('initConfigFile', () => {
     const written = load(
       fs.readFileSync(path.join(configDir, 'config.yml'), 'utf8'),
     ) as Record<string, Record<string, unknown>>;
-    expect(written.elasticsearch.engine).toBe('elasticsearch');
+    expect(written.elasticsearch.engine).toBe('opensearch');
     expect(written.github).toBeDefined();
   });
 
