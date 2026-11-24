@@ -26,16 +26,17 @@ Zqueue reads `~/.config/zencrepes/config.yml` (change the location with the `CON
 
 ```yaml
 elasticsearch:
-  # elasticsearch or opensearch
+  # opensearch (the default) or elasticsearch
   engine: opensearch
-  host: https://localhost:9200
+  # The default matches the docker-compose stack of this repository
+  host: https://localhost:9210
   # Basic authentication (works with both engines)
   username: admin
   password: ''
   # Path to a CA certificate, for clusters with a private CA
   sslCa: ''
-  # Set to false to accept self-signed certificates
-  sslVerify: true
+  # false (the default) accepts self-signed certificates; use true in production
+  sslVerify: false
   # Elastic Cloud only (engine: elasticsearch)
   cloudId: ''
 redis:
@@ -65,7 +66,7 @@ Start the local dependencies (Redis, and a secured OpenSearch):
 docker compose up -d
 ```
 
-Two optional profiles: `docker compose --profile dashboards up -d` adds OpenSearch Dashboards (the OpenSearch fork of Kibana) on [http://localhost:5601](http://localhost:5601), and `--profile elasticsearch` adds an Elasticsearch on port 9211.
+One optional profile: `docker compose --profile dashboards up -d` adds OpenSearch Dashboards (the OpenSearch fork of Kibana) on [http://localhost:5601](http://localhost:5601).
 
 Then:
 

@@ -2,14 +2,16 @@ import type { ZqueueConfig } from './config.types.js';
 
 // The configuration file (~/.config/zencrepes/config.yml) belongs to zqueue;
 // unknown sections are ignored, so the file may carry keys for other tools.
+// The search defaults match the docker-compose.yml of this repository, so a
+// fresh checkout only needs the password and the webhook secrets.
 export const defaultConfig: ZqueueConfig = {
   elasticsearch: {
     engine: 'opensearch',
-    host: 'http://127.0.0.1:9200',
+    host: 'https://localhost:9210',
     sslCa: '',
-    sslVerify: true,
+    sslVerify: false,
     cloudId: '',
-    username: '',
+    username: 'admin',
     password: '',
     dataIndices: {
       testingStates: 't_states_',
