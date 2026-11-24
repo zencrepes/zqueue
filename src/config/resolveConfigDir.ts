@@ -5,4 +5,4 @@ const expandTilde = (filePath: string): string =>
 
 export const resolveConfigDir = (
   env: NodeJS.ProcessEnv = process.env,
-): string => expandTilde(env.CONFIG_PATH ?? '~/.config/zindexer/');
+): string => expandTilde(env.CONFIG_PATH ?? '~/.config/zencrepes/');

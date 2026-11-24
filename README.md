@@ -22,7 +22,7 @@ Signatures use `x-hub-signature-256` (sha256, preferred) or `x-hub-signature` (s
 
 # Configuration
 
-Zqueue reads `~/.config/zindexer/config.yml` (change the location with the `CONFIG_PATH` environment variable). The file is shared with [zindexer](http://github.com/zencrepes/zindexer); zqueue only reads the sections below and fills any missing key with its default:
+Zqueue reads `~/.config/zencrepes/config.yml` (change the location with the `CONFIG_PATH` environment variable). Zqueue only reads the sections below and fills any missing key with its default. On the first start, when the file does not exist, zqueue creates it with the defaults, reports it, and stops: edit the file, then start zqueue again. Coming from zqueue 1.x, where the file was shared with zindexer, copy `~/.config/zindexer/config.yml` to the new location (or point `CONFIG_PATH` at the old one).
 
 ```yaml
 elasticsearch:
@@ -100,7 +100,7 @@ curl -X POST http://localhost:3003/github/webhook \
 
 ```bash
 docker build -t zencrepes/zqueue .
-docker run -p 3003:3003 -v ~/.config/zindexer:/root/.config/zindexer zencrepes/zqueue
+docker run -p 3003:3003 -v ~/.config/zencrepes:/root/.config/zencrepes zencrepes/zqueue
 ```
 
 For a full stack (zqueue, Redis and a secured OpenSearch), use the compose file in [deploy/](deploy) and follow [docs/setup.md](docs/setup.md).

@@ -10,7 +10,7 @@ This guide takes you from a blank machine to a zqueue instance that records GitH
 
 ## 1. Understand the configuration file
 
-zqueue reads one YAML file: `~/.config/zindexer/config.yml` (the location changes with the `CONFIG_PATH` environment variable). The file is shared with [zindexer](https://github.com/zencrepes/zindexer). zqueue fills every key it does not find with a default, so a minimal file is enough:
+zqueue reads one YAML file: `~/.config/zencrepes/config.yml` (the location changes with the `CONFIG_PATH` environment variable). zqueue fills every key it does not find with a default, so a minimal file is enough:
 
 ```yaml
 elasticsearch:
@@ -37,6 +37,8 @@ testing:
 
 Generate strong random values for the secrets and the password, for example with `openssl rand -hex 32`.
 
+When no configuration file exists, zqueue creates one with the defaults on its first start, reports that it did, and stops. That stop is deliberate: the generated file carries placeholder secrets and no credentials, so edit it, then start zqueue again. Coming from zqueue 1.x, where the file lived at `~/.config/zindexer/config.yml` and was shared with zindexer, copy it to the new location (or point `CONFIG_PATH` at the old one).
+
 ## 2. Get started locally (development)
 
 ```bash
@@ -47,7 +49,7 @@ npm install
 npm run start:dev           # listens on http://localhost:3003
 ```
 
-The development compose file sets the OpenSearch admin password to `zQueue!Dev2026` (override it with the `OPENSEARCH_INITIAL_ADMIN_PASSWORD` environment variable). A matching `~/.config/zindexer/config.yml`:
+The development compose file sets the OpenSearch admin password to `zQueue!Dev2026` (override it with the `OPENSEARCH_INITIAL_ADMIN_PASSWORD` environment variable). A matching `~/.config/zencrepes/config.yml`:
 
 ```yaml
 elasticsearch:
@@ -98,7 +100,7 @@ docker compose up -d
 
 What the stack does:
 
-- **zqueue** listens on port 3003 and reads `./config/config.yml` (mounted at `/root/.config/zindexer`).
+- **zqueue** listens on port 3003 and reads `./config/config.yml` (mounted at `/root/.config/zencrepes`).
 - **redis** buffers the deliveries; its data survives restarts in the `redis-data` volume.
 - **opensearch** runs single-node with the security plugin enabled (TLS plus authentication) and stores its data in the `opensearch-data` volume. Port 9200 stays internal to the compose network; publish it only if you need direct access.
 - **dashboards** serves OpenSearch Dashboards on port 5601, to browse the recorded events (section 6). Remove the service if you do not need a UI.
