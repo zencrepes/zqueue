@@ -13,6 +13,7 @@ export interface ConfigSearch {
     testingRuns: string;
     testingCases: string;
     testingPerfs: string;
+    runnerUsage: string;
   };
 }
 
@@ -37,9 +38,16 @@ export interface ConfigTesting {
   };
 }
 
+export interface ConfigRunners {
+  webhook: {
+    secret: string;
+  };
+}
+
 export interface ZqueueConfig {
   elasticsearch: ConfigSearch;
   redis: ConfigRedis;
   github: ConfigGithub;
   testing: ConfigTesting;
+  runners: ConfigRunners;
 }

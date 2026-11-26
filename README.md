@@ -12,11 +12,12 @@ This readme only contains developer-focused details. [docs/setup.md](docs/setup.
 
 # What zqueue does
 
-Zqueue is a [Nest.js](http://nestjs.com/) app that exposes three webhook endpoints. Each endpoint verifies the HMAC signature of the delivery, then places the payload in a Redis queue ([BullMQ](https://bullmq.io/)). A worker picks the job up and writes it to the search engine, with retries when the engine is unreachable.
+Zqueue is a [Nest.js](http://nestjs.com/) app that exposes four webhook endpoints. Each endpoint verifies the HMAC signature of the delivery, then places the payload in a Redis queue ([BullMQ](https://bullmq.io/)). A worker picks the job up and writes it to the search engine, with retries when the engine is unreachable.
 
 - **POST /github/webhook**: records GitHub events as they are received, one index per event type (`gh_events_issues`, `gh_events_pull_request`, ...). Each document carries the raw payload plus a small envelope (event, action, repository, organization, sender, delivery id, receive date). The GitHub delivery GUID is the document id, so redeliveries do not create duplicates. Zqueue does not call GitHub back: what arrives is what is stored.
 - **POST /testing/webhook**: records a testing state event into the states, runs and cases indices.
 - **POST /perfs/webhook**: records a performance report into the perfs index.
+- **POST /runners/webhook**: records the usage summary of one CI job (CPU, memory and disk used, against the capacity of the runner) into the runner usage index, one document per job. A report that does not match the schema is answered with `400`. [docs/runner-usage.md](docs/runner-usage.md) states the schema and how to join a report to the `workflow_job` event of the same job.
 
 Signatures use `x-hub-signature-256` (sha256, preferred) or `x-hub-signature` (sha1), computed over the raw request body. An invalid or missing signature is answered with `401`.
 
@@ -51,6 +52,11 @@ github:
 testing:
   webhook:
     secret: PLEASE_CHANGE_ME
+runners:
+  webhook:
+    # Empty by default: an empty secret rejects every runner usage report,
+    # so set one before the runners start posting
+    secret: ''
 ```
 
 Supported engines:

@@ -6,6 +6,7 @@ import { ConfigModule } from './config/config.module.js';
 import { ConfigService } from './config/config.service.js';
 import { GithubModule } from './github/github.module.js';
 import { PerfsModule } from './perfs/perfs.module.js';
+import { RunnersModule } from './runners/runners.module.js';
 import { parseRedisUrl } from './shared/parseRedisUrl.js';
 import { SearchClientModule } from './search/searchClient.module.js';
 import { TestingModule } from './testing/testing.module.js';
@@ -35,6 +36,7 @@ import { TestingModule } from './testing/testing.module.js';
     GithubModule,
     TestingModule,
     PerfsModule,
+    RunnersModule,
   ],
   controllers: [AppController],
 })

@@ -33,6 +33,11 @@ github:
 testing:
   webhook:
     secret: CHANGE_ME
+# Only needed when CI runners post their usage (docs/runner-usage.md). Use a
+# secret of its own: the runners hold it, and it must not also sign test results.
+runners:
+  webhook:
+    secret: CHANGE_ME
 ```
 
 Generate strong random values for the secrets and the password, for example with `openssl rand -hex 32`.
@@ -118,7 +123,7 @@ curl -k -u "$ADMIN" -X PUT https://localhost:9200/_plugins/_security/api/roles/z
   -H 'content-type: application/json' -d '{
   "cluster_permissions": ["cluster:monitor/health", "indices:data/write/bulk"],
   "index_permissions": [{
-    "index_patterns": ["gh_events_*", "t_states_*", "t_runs_*", "t_cases_*", "t_perfs_*"],
+    "index_patterns": ["gh_events_*", "t_states_*", "t_runs_*", "t_cases_*", "t_perfs_*", "runner_usage_*"],
     "allowed_actions": ["create_index", "write", "indices:admin/exists", "indices:admin/get"]
   }]
 }'
@@ -182,7 +187,7 @@ OpenSearch Dashboards is the OpenSearch equivalent of Kibana (it started as a fo
 3. Enter `gh_events_*` and pick `receivedAt` as the time field.
 4. Open **Discover** to search and filter the recorded events, and build charts from them under **Visualize**.
 
-The testing and performance indices work the same way, with the patterns `t_states_*`, `t_runs_*`, `t_cases_*` (time field `createdAt`) and `t_perfs_*` (time field `startedAt`).
+The testing and performance indices work the same way, with the patterns `t_states_*`, `t_runs_*`, `t_cases_*` (time field `createdAt`) and `t_perfs_*` (time field `startedAt`). The runner usage index uses the pattern `runner_usage_*` with the time field `endedAt`.
 
 With `engine: elasticsearch`, the equivalent tool is [Kibana](https://www.elastic.co/kibana), pointed at the same cluster.
 

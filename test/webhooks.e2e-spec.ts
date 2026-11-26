@@ -10,10 +10,15 @@ import { AppController } from '../src/app.controller.js';
 import { ConfigService } from '../src/config/config.service.js';
 import { GithubController } from '../src/github/github.controller.js';
 import { PerfsController } from '../src/perfs/perfs.controller.js';
+import { RunnersController } from '../src/runners/runners.controller.js';
 import { TestingController } from '../src/testing/testing.controller.js';
+import { validRunnerUsage } from './fixtures/runnerUsage.js';
 
 const GITHUB_SECRET = 'e2e-github-secret';
 const TESTING_SECRET = 'e2e-testing-secret';
+
+// A made-up secret for this test only.
+const RUNNERS_SECRET = 'e2e-runners-test-secret';
 
 const sign256 = (body: string, secret: string) =>
   'sha256=' + createHmac('sha256', secret).update(body).digest('hex');
@@ -23,6 +28,7 @@ describe('Webhooks (e2e)', () => {
   const githubQueue = { add: vi.fn() };
   const testingQueue = { add: vi.fn() };
   const perfsQueue = { add: vi.fn() };
+  const runnersQueue = { add: vi.fn() };
 
   beforeAll(async () => {
     vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
@@ -34,6 +40,7 @@ describe('Webhooks (e2e)', () => {
         GithubController,
         TestingController,
         PerfsController,
+        RunnersController,
       ],
       providers: [
         {
@@ -50,12 +57,14 @@ describe('Webhooks (e2e)', () => {
                 },
               },
               testing: { webhook: { secret: TESTING_SECRET } },
+              runners: { webhook: { secret: RUNNERS_SECRET } },
             }),
           },
         },
         { provide: getQueueToken('github'), useValue: githubQueue },
         { provide: getQueueToken('testing'), useValue: testingQueue },
         { provide: getQueueToken('perfs'), useValue: perfsQueue },
+        { provide: getQueueToken('runners'), useValue: runnersQueue },
       ],
     }).compile();
 
@@ -156,5 +165,57 @@ describe('Webhooks (e2e)', () => {
       .send(body)
       .expect(401);
     expect(perfsQueue.add).not.toHaveBeenCalled();
+  });
+
+  it('POST /runners/webhook records a signed runner usage report', async () => {
+    const body = JSON.stringify(validRunnerUsage);
+    await request(app.getHttpServer())
+      .post('/runners/webhook')
+      .set('content-type', 'application/json')
+      .set('x-hub-signature-256', sign256(body, RUNNERS_SECRET))
+      .send(body)
+      .expect(202);
+    expect(runnersQueue.add).toHaveBeenCalledTimes(1);
+    expect(runnersQueue.add).toHaveBeenCalledWith('store', validRunnerUsage);
+  });
+
+  it('POST /runners/webhook rejects a wrong signature with 401', async () => {
+    const body = JSON.stringify(validRunnerUsage);
+    await request(app.getHttpServer())
+      .post('/runners/webhook')
+      .set('content-type', 'application/json')
+      .set('x-hub-signature-256', sign256(body, 'wrong-secret'))
+      .send(body)
+      .expect(401);
+    expect(runnersQueue.add).not.toHaveBeenCalled();
+  });
+
+  it('POST /runners/webhook does not accept the testing secret', async () => {
+    const body = JSON.stringify(validRunnerUsage);
+    await request(app.getHttpServer())
+      .post('/runners/webhook')
+      .set('content-type', 'application/json')
+      .set('x-hub-signature-256', sign256(body, TESTING_SECRET))
+      .send(body)
+      .expect(401);
+    expect(runnersQueue.add).not.toHaveBeenCalled();
+  });
+
+  it('POST /runners/webhook rejects a signed report with a value out of range with 400', async () => {
+    const body = JSON.stringify({
+      ...validRunnerUsage,
+      usage: {
+        ...validRunnerUsage.usage,
+        cpu: { ...validRunnerUsage.usage.cpu, p95Pct: 140 },
+      },
+    });
+    const response = await request(app.getHttpServer())
+      .post('/runners/webhook')
+      .set('content-type', 'application/json')
+      .set('x-hub-signature-256', sign256(body, RUNNERS_SECRET))
+      .send(body)
+      .expect(400);
+    expect(JSON.stringify(response.body)).toContain('usage.cpu.p95Pct');
+    expect(runnersQueue.add).not.toHaveBeenCalled();
   });
 });
