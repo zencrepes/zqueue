@@ -18,6 +18,7 @@ export const defaultConfig: ZqueueConfig = {
       testingRuns: 't_runs_',
       testingCases: 't_cases_',
       testingPerfs: 't_perfs_',
+      runnerUsage: 'runner_usage_',
     },
   },
   redis: {
@@ -34,6 +35,13 @@ export const defaultConfig: ZqueueConfig = {
   testing: {
     webhook: {
       secret: 'PLEASE_CHANGE_ME',
+    },
+  },
+  // Empty on purpose: verifyWebhookSignature rejects every report while the
+  // secret is empty, so an upgraded deployment accepts nothing until one is set.
+  runners: {
+    webhook: {
+      secret: '',
     },
   },
 };

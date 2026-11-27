@@ -14,6 +14,7 @@ const baseConfig: ConfigSearch = {
     testingRuns: 't_runs_',
     testingCases: 't_cases_',
     testingPerfs: 't_perfs_',
+    runnerUsage: 'runner_usage_',
   },
 };
 
